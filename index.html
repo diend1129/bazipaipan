@@ -1510,10 +1510,26 @@ window.onload=()=>initSelects();
 const PAID_TABS = [3,4,5,6,7,8];
 const PAID_TAB_NAMES = {3:'分析',4:'十神',5:'大運',6:'流年',7:'流月',8:'日運'};
 
-// 內建序號雜湊（出廠預設，後台可動態新增）
-const BUILTIN_HASHES = new Set([
-  "494bb213ca5c57baffe6a7855a5c2df633afd9f3036a476fdd46af38142a13b9" // WL-TEST-2024
-]);
+// 內建測試序號雜湊
+const WL_SALT = 'WL2862';
+const WL_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function wlCalcCheck(part1, part2) {
+  const h = sha256(part1 + part2 + WL_SALT);
+  const n1 = parseInt(h.slice(0,2),16) % WL_CHARS.length;
+  const n2 = parseInt(h.slice(2,4),16) % WL_CHARS.length;
+  return WL_CHARS[n1] + WL_CHARS[n2];
+}
+
+function isValidSerial(serial) {
+  if(serial === 'WL-TEST-2024') return true;
+  if(!/^WL[AS]?-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(serial)) return false;
+  const parts = serial.split('-');
+  const part1 = parts[1];
+  const part2 = parts[2].slice(0,2);
+  const checkInSerial = parts[2].slice(2,4);
+  return checkInSerial === wlCalcCheck(part1, part2);
+}
 
 // 暫存付費 tab 的原始 HTML
 const TAB_BACKUPS = {};
@@ -1542,16 +1558,6 @@ function sha256(str) {
 
 function isUnlocked() {
   return localStorage.getItem('bazi_unlocked') === 'true';
-}
-
-// 取得所有有效雜湊（內建 + 後台動態新增）
-function getAllHashes() {
-  const set = new Set(BUILTIN_HASHES);
-  try {
-    const extra = JSON.parse(localStorage.getItem('bazi_extra_hashes') || '[]');
-    extra.forEach(h => set.add(h));
-  } catch(e){}
-  return set;
 }
 
 function updateUnlockUI() {
@@ -1621,7 +1627,7 @@ function verifySerial(tabId) {
 
   const hash = sha256(serial);
 
-  if(getAllHashes().has(hash)) {
+  if(isValidSerial(serial)) {
     localStorage.setItem('bazi_unlocked', 'true');
     localStorage.setItem('bazi_serial', serial);
     okEl.style.display = 'block';
