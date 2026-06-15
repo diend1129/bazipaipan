@@ -1511,24 +1511,11 @@ const PAID_TABS = [3,4,5,6,7,8];
 const PAID_TAB_NAMES = {3:'分析',4:'十神',5:'大運',6:'流年',7:'流月',8:'日運'};
 
 // 內建測試序號雜湊
-const WL_SALT = 'WL2862';
-const WL_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-
-function wlCalcCheck(part1, part2) {
-  const h = sha256(part1 + part2 + WL_SALT);
-  const n1 = parseInt(h.slice(0,2),16) % WL_CHARS.length;
-  const n2 = parseInt(h.slice(2,4),16) % WL_CHARS.length;
-  return WL_CHARS[n1] + WL_CHARS[n2];
-}
+// Google Sheet API 驗證
+const GS_API = 'https://script.google.com/macros/s/AKfycbxChdWDOL6q8dfQC6Fg5Zc5zQZV9BYodG3i-Ht0OzyuN4TGSl4UeLpJ5JuQSEh-fj-pbg/exec';
 
 function isValidSerial(serial) {
-  if(serial === 'WL-TEST-2024') return true;
-  if(!/^WL[AS]?-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(serial)) return false;
-  const parts = serial.split('-');
-  const part1 = parts[1];
-  const part2 = parts[2].slice(0,2);
-  const checkInSerial = parts[2].slice(2,4);
-  return checkInSerial === wlCalcCheck(part1, part2);
+  return VALID_SERIALS.has(serial.trim().toUpperCase());
 }
 
 // 暫存付費 tab 的原始 HTML
@@ -1617,6 +1604,7 @@ function verifySerial(tabId) {
   const input = document.getElementById('serialInput_'+tabId);
   const errEl = document.getElementById('serialErr_'+tabId);
   const okEl = document.getElementById('serialOk_'+tabId);
+  const btn = document.querySelector('.paywall-btn');
   if(!input) return;
 
   const serial = input.value.trim().toUpperCase();
@@ -1624,31 +1612,60 @@ function verifySerial(tabId) {
 
   errEl.style.display = 'none';
   okEl.style.display = 'none';
+  if(btn) { btn.textContent = '驗證中...'; btn.disabled = true; }
 
-  const hash = sha256(serial);
-
-  if(isValidSerial(serial)) {
-    localStorage.setItem('bazi_unlocked', 'true');
-    localStorage.setItem('bazi_serial', serial);
-    okEl.style.display = 'block';
-    updateUnlockUI();
-    setTimeout(()=>{
-      // 還原所有付費 tab 的原始 HTML 結構（空殼）
-      PAID_TABS.forEach(t => {
-        const el = document.getElementById('tab'+t);
-        if(el && TAB_BACKUPS[t]) el.innerHTML = TAB_BACKUPS[t];
-      });
-      // 重新執行完整渲染（重新填入所有內容）
-      if(gRes) {
-        renderAll();
-        renderLiuYue();
-      }
-    }, 700);
-  } else {
-    errEl.style.display = 'block';
-    input.style.borderColor = '#A05040';
-    setTimeout(()=>{input.style.borderColor='';}, 1500);
+  // 先檢查本地快取（已解鎖過的序號）
+  const cached = JSON.parse(localStorage.getItem('bazi_valid_serials') || '[]');
+  if(cached.includes(serial) || serial === 'WL-TEST-2024') {
+    onSerialValid(serial, tabId);
+    return;
   }
+
+  // 呼叫 Google Sheet API
+  fetch(GS_API + '?serial=' + encodeURIComponent(serial))
+    .then(r => r.json())
+    .then(data => {
+      if(btn) { btn.textContent = '解 鎖'; btn.disabled = false; }
+      if(data.valid) {
+        // 快取這個序號到 localStorage
+        const list = JSON.parse(localStorage.getItem('bazi_valid_serials') || '[]');
+        if(!list.includes(serial)) list.push(serial);
+        localStorage.setItem('bazi_valid_serials', JSON.stringify(list));
+        onSerialValid(serial, tabId);
+      } else {
+        errEl.style.display = 'block';
+        input.style.borderColor = '#A05040';
+        setTimeout(()=>{input.style.borderColor='';}, 1500);
+      }
+    })
+    .catch(() => {
+      if(btn) { btn.textContent = '解 鎖'; btn.disabled = false; }
+      // 網路失敗時檢查本地快取
+      if(cached.includes(serial)) {
+        onSerialValid(serial, tabId);
+      } else {
+        errEl.textContent = '網路連線失敗，請確認網路後重試';
+        errEl.style.display = 'block';
+      }
+    });
+}
+
+function onSerialValid(serial, tabId) {
+  const okEl = document.getElementById('serialOk_'+tabId);
+  if(okEl) okEl.style.display = 'block';
+  localStorage.setItem('bazi_unlocked', 'true');
+  localStorage.setItem('bazi_serial', serial);
+  updateUnlockUI();
+  setTimeout(()=>{
+    PAID_TABS.forEach(t => {
+      const el = document.getElementById('tab'+t);
+      if(el && TAB_BACKUPS[t]) el.innerHTML = TAB_BACKUPS[t];
+    });
+    if(gRes) {
+      renderAll();
+      renderLiuYue();
+    }
+  }, 700);
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
