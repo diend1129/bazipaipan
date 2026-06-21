@@ -29,7 +29,9 @@
   --accent:#111111;
   --shadow:rgba(0,0,0,.05);
 }
-body{font-family:'Noto Serif TC','Songti TC',Georgia,serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+body{font-family:'Noto Serif TC','Songti TC',Georgia,serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;-webkit-touch-callout:default}
+img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
 input,button,select,textarea{font-family:inherit}
 
 /* Header */
@@ -134,20 +136,6 @@ button.calc:hover{opacity:.85}
 input[type=text]{width:100%;padding:9px 11px;border:1px solid var(--border);background:var(--card);font-size:14px;color:var(--text);outline:none}
 input[type=text]:focus{border-color:var(--accent)}
 
-/* === 付費牆 === */
-.paywall-banner{background:var(--card);border:1px solid var(--border);padding:20px 18px;margin-bottom:10px;text-align:center}
-.paywall-banner .pw-icon{font-size:28px;margin-bottom:8px}
-.paywall-banner .pw-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:2px;margin-bottom:6px}
-.paywall-banner .pw-sub{font-size:12px;color:var(--text3);letter-spacing:1px;line-height:1.8;margin-bottom:14px}
-.paywall-input{width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--bg);font-size:14px;font-family:inherit;color:var(--text);letter-spacing:3px;text-align:center;outline:none;margin-bottom:10px}
-.paywall-input:focus{border-color:var(--accent)}
-.paywall-btn{width:100%;padding:12px;background:var(--accent);color:#FFF;border:none;font-size:13px;font-weight:600;font-family:inherit;letter-spacing:4px;cursor:pointer}
-.paywall-btn:hover{opacity:.85}
-.paywall-err{font-size:12px;color:#A05040;text-align:center;margin-top:6px;letter-spacing:1px;display:none}
-.paywall-ok{font-size:12px;color:#5A8A60;text-align:center;margin-top:6px;letter-spacing:1px;display:none}
-.lock-badge{display:inline-block;font-size:10px;padding:1px 7px;border:1px solid #C8A870;color:#C8A870;letter-spacing:1px;margin-left:5px;vertical-align:middle}
-#unlockStatus{position:fixed;bottom:16px;right:16px;background:var(--accent);color:#FFF;font-size:11px;padding:5px 12px;letter-spacing:1px;border:none;cursor:pointer;z-index:999;display:none}
-
 /* Dark mode */
 body.dark-mode{
   --bg:#161410;--card:#1E1C16;--border:#2C2A22;--border2:#242218;
@@ -157,6 +145,7 @@ body.dark-mode{
 body.dark-mode .header{background:var(--bg)}
 body.dark-mode .tab.active{background:#C8A870;color:#161410}
 body.dark-mode button.calc{background:#C8A870;color:#161410}
+body.dark-mode #backTopBtn{background:#C8A870;color:#161410;border-color:#161410}
 body.dark-mode .gender-btn.active{background:#C8A870;color:#161410;border-color:#C8A870}
 body.dark-mode .ss-card-head{background:var(--bg)!important}
 body.dark-mode .acc-head:hover,.dark-mode .ss-card-head:hover{background:var(--bg)!important}
@@ -184,9 +173,14 @@ body.dark-mode #quickInfoCard{background:var(--card)!important;border-color:var(
 </div>
 <div class="main">
   <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="modeSelfBtn" class="mode-btn gender-btn active" onclick="setFillMode('self',this)" style="font-size:13px;letter-spacing:1px">📝 自己排盤</button>
+      <button id="modeOtherBtn" class="mode-btn gender-btn" onclick="setFillMode('other',this)" style="font-size:13px;letter-spacing:1px">👤 幫客戶排盤</button>
+    </div>
+    <div id="modeHint" style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:9px 12px;background:var(--bg);border-left:3px solid var(--border)">填入你自己的出生資料，立即看到命盤分析。</div>
     <div class="sec-label">輸入出生資料</div>
     <div style="margin-bottom:12px">
-      <div class="sel-label" style="margin-bottom:6px">姓　名</div>
+      <div class="sel-label" style="margin-bottom:6px" id="nameLabel">姓　名</div>
       <input id="inputName" type="text" placeholder="請輸入姓名（選填）" style="font-size:14px;color:var(--text)">
     </div>
 
@@ -223,7 +217,7 @@ body.dark-mode #quickInfoCard{background:var(--card)!important;border-color:var(
           <button onclick="copyQuickInfo()" style="padding:4px 10px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer;letter-spacing:.5px">複製</button>
           <button onclick="clearQuickInfo()" style="padding:4px 10px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer;letter-spacing:.5px">清除</button>
           <button onclick="saveToHistory()" id="saveHistoryBtn" style="padding:4px 10px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer;letter-spacing:.5px">💾 儲存命盤</button>
-          <button onclick="saveFullCard()" style="padding:4px 10px;font-size:11px;font-family:inherit;background:var(--ink);color:#FFF;border:none;cursor:pointer;letter-spacing:.5px">🖼 儲存圖片</button>
+          <button onclick="saveDailyScoreCard()" style="padding:4px 10px;font-size:11px;font-family:inherit;background:linear-gradient(135deg,#D87A9A,#C8A870);color:#FFF;border:none;cursor:pointer;letter-spacing:.5px">📊 今日運勢小卡</button>
         </div>
       </div>
       <div id="quickInfoBody"></div>
@@ -249,18 +243,28 @@ body.dark-mode #quickInfoCard{background:var(--card)!important;border-color:var(
       <button class="tab active" onclick="switchTab(0,this)">命盤</button>
       <button class="tab" onclick="switchTab(1,this)">性格</button>
       <button class="tab" onclick="switchTab(2,this)">健康</button>
-      <button class="tab" onclick="switchTab(3,this)">分析 🔒</button>
-      <button class="tab" onclick="switchTab(4,this)">十神 🔒</button>
+      <button class="tab" onclick="switchTab(3,this)">分析</button>
+      <button class="tab" onclick="switchTab(4,this)">十神</button>
+      <button class="tab" onclick="switchTab(10,this)">適合</button>
+      <button class="tab" onclick="switchTab(11,this)">開運服務</button>
     </div>
     <div class="tabs" style="margin-top:-10px">
-      <button class="tab" onclick="switchTab(5,this)">大運 🔒</button>
-      <button class="tab" onclick="switchTab(6,this)">流年 🔒</button>
-      <button class="tab" onclick="switchTab(7,this)">流月 🔒</button>
-      <button class="tab" onclick="switchTab(8,this)">日運 🔒</button>
+      <button class="tab" onclick="switchTab(5,this)">大運</button>
+      <button class="tab" onclick="switchTab(6,this)">流年</button>
+      <button class="tab" onclick="switchTab(7,this)">流月</button>
+      <button class="tab" onclick="switchTab(8,this)">日運</button>
       <button class="tab" onclick="switchTab(9,this)">歷史</button>
     </div>
 
     <div id="tab0">
+      <div class="card" id="summaryCard" style="border-color:var(--gold)40">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <span style="font-size:16px">📌</span>
+          <span style="font-size:14px;font-weight:600;color:var(--text);letter-spacing:1px">命盤總結</span>
+          <span style="font-size:11px;color:var(--text3)">先看這裡，快速抓重點</span>
+        </div>
+        <div id="summaryBody" style="font-size:14px;color:var(--text2);line-height:2.1"></div>
+      </div>
       <div class="card" id="pillarsCard">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div class="sec-title" style="margin-bottom:0;border-bottom:none" style="font-size:10px;color:var(--text3);letter-spacing:3px;margin-bottom:0" id="pillarsTitle">生辰八字命盤</div>
@@ -310,7 +314,8 @@ body.dark-mode #quickInfoCard{background:var(--card)!important;border-color:var(
 
     <div id="tab2" style="display:none">
       <div class="card"><div class="sec-title">先天病因</div><div style="font-size:13px;color:#A39B8E;margin-bottom:14px">日主天干對應</div><div id="healthTG"></div></div>
-      <div class="card"><div class="sec-title">後天病因</div><div style="font-size:13px;color:#A39B8E;margin-bottom:14px">四柱地支對應</div><div id="healthDZ"></div></div>
+      <div class="card"><div class="sec-title">後天病因</div><div style="font-size:13px;color:#A39B8E;margin-bottom:14px">四柱地支對應 ・ 命盤帶有的地支會影響對應的身體部位</div><div id="healthDZ"></div></div>
+      <div class="card"><div class="sec-title">十二時辰養生</div><div style="font-size:13px;color:#A39B8E;margin-bottom:14px">不分命盤，每天走到對應時段，該臟腑正在運作，宜多留意保養</div><div id="healthHour"></div></div>
       <div class="card" style="margin-bottom:0"><div class="sec-title">五行臟腑</div><div style="font-size:13px;color:#A39B8E;margin-bottom:14px">黃帝內經對應</div><div id="healthWX"></div></div>
     </div>
 
@@ -327,7 +332,17 @@ body.dark-mode #quickInfoCard{background:var(--card)!important;border-color:var(
           <strong>十神生剋口訣</strong><br>官怕傷 ・ 財怕劫 ・ 印怕財 ・ 食怕梟
         </div>
       </div>
-      <div class="card" style="margin-bottom:0"><div class="sec-title">十神詳解</div><div style="font-size:13px;color:#A39B8E;margin-bottom:14px">點擊展開</div><div id="ssDetail"></div></div>
+      <div class="card" style="margin-bottom:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
+          <div class="sec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">十神詳解</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="toggleAllSS(true)" style="padding:3px 10px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer">展開全部</button>
+            <button onclick="toggleAllSS(false)" style="padding:3px 10px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer">收起全部</button>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#A39B8E;margin:8px 0 14px">點擊展開</div>
+        <div id="ssDetail"></div>
+      </div>
     </div>
 
     <div id="tab5" style="display:none">
@@ -391,14 +406,76 @@ body.dark-mode #quickInfoCard{background:var(--card)!important;border-color:var(
   </div>
     <div id="tab9" style="display:none">
       <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border2)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border2)">
           <div class="sec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">命盤歷史紀錄</div>
           <button onclick="clearAllHistory()" style="padding:4px 12px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid #C89090;color:#A85840;cursor:pointer;letter-spacing:.5px">清除全部</button>
+        </div>
+        <div style="margin-bottom:14px">
+          <input id="historySearch" type="text" placeholder="🔍 搜尋姓名、日主或生日（例如：王小明、甲、1992）" oninput="renderHistory()" style="font-size:13px;color:var(--text)">
+        </div>
+        <div id="categoryFilterRow" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+          <button class="cat-filter-btn active" data-cat="" onclick="setCategoryFilter('',this)" style="padding:6px 14px;font-size:12px;font-family:inherit;background:var(--ink);color:#FFF;border:none;cursor:pointer;border-radius:20px">全部</button>
+          <button class="cat-filter-btn" data-cat="感情" onclick="setCategoryFilter('感情',this)" style="padding:6px 14px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text2);border:1px solid var(--border);cursor:pointer;border-radius:20px">💕 感情</button>
+          <button class="cat-filter-btn" data-cat="財運" onclick="setCategoryFilter('財運',this)" style="padding:6px 14px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text2);border:1px solid var(--border);cursor:pointer;border-radius:20px">💰 財運</button>
+          <button class="cat-filter-btn" data-cat="事業" onclick="setCategoryFilter('事業',this)" style="padding:6px 14px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text2);border:1px solid var(--border);cursor:pointer;border-radius:20px">💼 事業</button>
+          <button class="cat-filter-btn" data-cat="健康" onclick="setCategoryFilter('健康',this)" style="padding:6px 14px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text2);border:1px solid var(--border);cursor:pointer;border-radius:20px">🌿 健康</button>
+          <button class="cat-filter-btn" data-cat="運勢" onclick="setCategoryFilter('運勢',this)" style="padding:6px 14px;font-size:12px;font-family:inherit;background:var(--card);color:var(--text2);border:1px solid var(--border);cursor:pointer;border-radius:20px">✨ 運勢</button>
         </div>
         <div id="historyList">
           <div class="empty-note">尚無儲存的命盤記錄</div>
         </div>
       </div>
+    </div>
+
+    <div id="tab10" style="display:none">
+      <div class="card">
+        <div class="sec-title">工作適合方向</div>
+        <div style="font-size:13px;color:#A39B8E;margin-bottom:14px">日主天干對應 ・ 天職地圖</div>
+        <div id="careerTG"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="sec-title">十神工作型態</div>
+        <div style="font-size:13px;color:#A39B8E;margin-bottom:14px">依命盤主要十神判斷的工作方式建議</div>
+        <div id="careerSS"></div>
+        <div style="margin-top:14px;padding:11px 14px;background:var(--bg);border:1px solid var(--border2);font-size:12px;color:var(--text3);line-height:1.8">💡 如果命盤顯示財運或事業運卡關，可以參考「開運服務」分頁了解更多。</div>
+      </div>
+    </div>
+
+    <div id="tab11" style="display:none">
+      <div class="card" id="serviceMatchCard" style="display:none">
+        <div class="sec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">✦ 根據你的命盤</div>
+        <div style="font-size:13px;color:#A39B8E;margin:8px 0 12px">這幾項服務可能對你特別有幫助</div>
+        <div id="serviceMatchBadges" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="sec-title">開運服務介紹</div>
+        <div style="font-size:13px;color:#A39B8E;margin-bottom:14px">命理與陽宅延伸服務，皆由老師親自代辦</div>
+        <div id="serviceIntroList"></div>
+      </div>
+    </div>
+
+    <!-- ── 開運服務引導橫幅（依命盤判斷，命中才顯示）── -->
+    <div class="card" id="serviceBanner" style="display:none;background:linear-gradient(135deg,#F8F0E4,#F2E8D8);border:1px solid #D8C0A040;text-align:center;padding:18px 20px">
+      <div style="font-size:13px;color:#8A6A3A;margin-bottom:8px">✦ 依你的命盤判斷，這幾項服務可能對你有幫助</div>
+      <div id="serviceBannerBadges" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:12px"></div>
+      <button onclick="goToServiceTab()" style="padding:8px 22px;font-size:13px;font-family:inherit;background:#8A6A3A;color:#FFF;border:none;cursor:pointer;letter-spacing:1px">查看開運服務詳情 →</button>
+    </div>
+
+    <!-- ── LINE 諮詢導流區（固定顯示於排盤結果下方）── -->
+    <div class="card" style="background:linear-gradient(135deg,#1E1C16,#2A2620);border:none;text-align:center;padding:28px 22px">
+      <div style="font-size:13px;color:#C8A870;letter-spacing:2px;margin-bottom:8px">想更深入了解命盤？</div>
+      <div style="font-size:13px;color:#A89A78;line-height:1.8;margin-bottom:18px">
+        命盤排出來只是第一步，每個人的人生課題都不一樣。<br>
+        想知道感情、事業、財運怎麼走，或想諮詢合婚、擇日（婚嫁、開業、搬家），<br>
+        歡迎加 LINE 直接詢問老師，提供個人化的命理與陽宅建議。
+      </div>
+      <a href="https://line.me/R/ti/p/@weiliang2862" target="_blank" rel="noopener" style="display:inline-block;padding:13px 32px;background:#06C755;color:#FFF;font-size:15px;font-weight:600;letter-spacing:2px;text-decoration:none;border-radius:4px">💬 加LINE諮詢老師</a>
+      <div style="font-size:11px;color:#8A7E68;margin-top:14px;letter-spacing:1px">LINE ID：@weiliang2862</div>
+    </div>
+
+    <!-- ── 免責聲明 ── -->
+    <div style="font-size:11px;color:var(--text3);line-height:1.9;padding:16px 14px;text-align:center">
+      ⚠️ 本工具僅提供命理排盤與基礎分析參考，內容為傳統命理學說之歸納整理，不構成醫療、法律、財務或心理諮詢建議，亦不能取代專業人士之判斷。命運受個人選擇與努力影響，命理結果僅供自我覺察與參考，請以正向、開放的態度看待，勿過度依賴或迷信。
     </div>
   </div>
   <div class="footer">命理僅供參考 ・ 知命善用 ・ 心態決定運勢</div>
@@ -424,32 +501,315 @@ const HAI=[["子","未"],["丑","午"],["寅","巳"],["卯","辰"],["申","亥"]
 const XING_3=[{m:["寅","巳","申"],t:"無恩之刑"},{m:["丑","戌","未"],t:"持勢之刑"}];
 const XING_2=[{m:["子","卯"],t:"無禮之刑"}];
 const SELF_X=["辰","午","酉","亥"];
+// ── 犯太歲判斷：值太歲（本命年）、沖太歲、刑太歲、害太歲、破太歲 ──
+const XING_SAN=[["寅","巳","申"],["丑","戌","未"]]; // 三刑
+const XING_ZI=[["子","卯"]]; // 子卯相刑
+const PO=[["子","酉"],["卯","午"],["巳","申"],["寅","亥"],["辰","丑"],["未","戌"]]; // 六破
+const TAISUI_DESC={
+  值: {name:"值太歲",tag:"本命年",desc:"今年是你的本命年，跟命盤年柱的地支完全相同，運勢起伏會比較明顯，好的更好、壞的也更要小心。傳統上建議這年可以安太歲、求平安符，行事低調一點，重大決定前多想一想。"},
+  沖: {name:"沖太歲",tag:"對沖",desc:"今年的地支跟命盤年柱形成對沖，是傳統上最需要留意的一種犯太歲，代表變動會比較大，無論是工作、感情或健康都容易出現意想不到的轉折。建議行事謹慎，重大決定可以緩一緩，安太歲也是常見的化解方式。"},
+  刑: {name:"刑太歲",tag:"相刑",desc:"今年的地支跟命盤年柱形成相刑的關係，容易招來是非口舌、官司糾紛，或是人際關係上的摩擦衝突。這年要特別注意言語上的得理不饒人，盡量以和為貴，避免捲入不必要的爭執。"},
+  害: {name:"害太歲",tag:"相害",desc:"今年的地支跟命盤年柱形成相害的關係，容易出現溝通不順、聚少離多或貌合神離的狀況，做事之前比較容易先往壞處想。這年要多花心思維繫人際關係，避免因為小誤會累積成大隔閡。"},
+  破: {name:"破太歲",tag:"相破",desc:"今年的地支跟命盤年柱形成相破的關係，代表原本穩定的事物可能會被打破、產生變化，財務或計劃上容易出現突發狀況。這年建議財務上多留一點緩衝，重要計畫也要預留備案。"}
+};
+function checkTaiSui(yearZhi, birthYearZhi){
+  if(yearZhi===birthYearZhi) return TAISUI_DESC.值;
+  for(const[a,b]of CHONG){ if((yearZhi===a&&birthYearZhi===b)||(yearZhi===b&&birthYearZhi===a)) return TAISUI_DESC.沖; }
+  for(const trio of XING_SAN){ if(trio.includes(yearZhi)&&trio.includes(birthYearZhi)&&yearZhi!==birthYearZhi) return TAISUI_DESC.刑; }
+  for(const[a,b]of XING_ZI){ if((yearZhi===a&&birthYearZhi===b)||(yearZhi===b&&birthYearZhi===a)) return TAISUI_DESC.刑; }
+  for(const[a,b]of HAI){ if((yearZhi===a&&birthYearZhi===b)||(yearZhi===b&&birthYearZhi===a)) return TAISUI_DESC.害; }
+  for(const[a,b]of PO){ if((yearZhi===a&&birthYearZhi===b)||(yearZhi===b&&birthYearZhi===a)) return TAISUI_DESC.破; }
+  return null;
+}
 // 六衝詳細解釋（教材P.32-34）
-const CHONG_DETAIL={"子午":"個性較極端，情緒起伏脾氣大，不喜歡被諷刺，指桃花，人緣好人際關係好，也易有感情困擾，夫妻宮有此衝易犯桃花。","丑未":"庫衝開花錢大方，難聚財，追根究柢，鑽牛角尖，過度自信，錢會不知不覺中流失。","寅申":"衝勁十足，喜開快車喜走大馬路直衝，應注意車關。做事很敢衝，好動閒不住，適合業務工作東奔西跑，吵架時常離家，愛碎唸，對人付出人家不太會感激。","卯酉":"有第六感，察言觀色，桃花緣、人緣及長輩緣好，需先溝通好才做。東西常移動，指桃花，人緣好，較會衡量別人，憑直覺做事，做事有計劃，愛乾淨，亦有潔癖，但也可能外表乾淨家裡亂。","辰戌":"個性不好，脾氣也易動怒，自圓其說，好辯口才佳，庫衝破，錢財守不住，有運賺無運賠。","巳亥":"口才一流，講師格，辯才無礙，善辯不服輸，經常禍從口出，比較得理不饒人，適合業務工作，喜走彎曲小道，改道行走，應注意車關。"};
+const CHONG_DETAIL={"子午":"這組相衝容易讓人個性比較極端，情緒起伏大、脾氣也較急，不喜歡被人嘲諷或挖苦。同時也代表人緣不錯、容易有異性緣，但相對地也比較容易遇到感情上的困擾，如果出現在夫妻宮的位置，要特別注意感情上的誘惑。","丑未":"這組相衝代表花錢比較大方，賺得多花得也多，財富不容易留住。個性容易過度自信、喜歡追根究柢，有時會鑽牛角尖，錢財常常在不知不覺間就花掉了。","寅申":"這組相衝會讓人衝勁十足，喜歡開快車、走大馬路，要特別留意交通安全。做事敢衝、靜不下來，很適合東奔西跑的業務型工作，但容易因為一點小事就想離家，也比較容易抱怨、對別人的付出不太懂得感激。","卯酉":"這組相衝的人第六感比較敏銳，很會察言觀色，人緣、桃花和長輩緣都不錯，但做任何決定之前最好先溝通清楚再行動。個性愛乾淨甚至有點潔癖，不過也可能是那種外表乾淨整潔，家裡卻意外凌亂的反差型人。","辰戌":"這組相衝容易讓人脾氣比較不好、容易動怒，講話喜歡自圓其說，口才不錯也很會辯論。財庫容易被衝破，賺錢的時候賺得到，運勢不好的時候也容易賠回去，財務上需要多一份謹慎。","巳亥":"這組相衝的人口才一流，很適合走教學或講師類的工作，辯才無礙、不容易認輸，但也比較容易因為說話太直接而惹禍上身，得理不饒人的傾向較明顯。喜歡走小路、繞道而行，建議多注意交通安全。"};
 // 六害詳細（含歌訣）
 const HAI_SONG="六害歌：羊鼠相逢一旦休，從來白馬怕青牛，蛇逢猛虎如刀截，豬見猿猴似箭投，玉兔見龍雲裡去，金雞遇犬淚雙流。";
-const HAI_MEANING="害代表分離、變數、變卦。難以溝通、分離、聚少離多、貌合神離、還未做先想輸、悲觀。";
+const HAI_MEANING="代表這兩個生命領域之間容易出現分離、變數或想法上的落差，溝通起來不太順暢，常常聚少離多，或表面相處融洽但內心其實有距離，做事之前容易先往壞處想，個性偏悲觀。";
 // 四刑詳細說明
 const XING_DETAIL={"無禮之刑":"眼光自視甚高，講話沒禮貌，沒大沒小，說話不客氣沒分寸，自視清高氣質高雅（假高尚）；與人相處因說話言語令人感受不舒服、不融洽而不自知。","無恩之刑":"很會做，做到流汗，被嫌到流涎，做到累死，別人也不會感激你，替別人打江山。做傻工，沒恩惠別人不領情，吃力不討好，有功無賞打破要賠，婦人有此刑，易孤獨。","恃勢之刑":"聰明反被聰明誤，太過有自信（靠勢）、自負，往往事與願違，大意失荊州。做到流汗，被嫌到流口水，有功無賞打破要賠，易遭挫折，無惻隱之心，剛毅且易成災。","自刑":"明知不可為而為之，常拿石頭砸自己的腳，固執己見，自尋煩惱；心裡的鬱悶講不出來，有苦難言；鬱悶一點一點不斷的累積，念頭會灰色、悲觀、自卑，甚至想不開（尤其是亥月生者）。"};
 // 自刑個別說明（只顯示命中的那個）
 const SELF_XING_DESC={辰:"辰刑辰：固執己見，老大姿態，不喜歡別人左右束縛，喜歡獨立，做事易有頭無尾，屬「龍」者。",午:"午刑午：好勝心強，不喜歡輸的感覺，喜出頭，受不了言語刺激，個性好強極端，沒耐性、健忘；喜歡人拍馬屁，聽好聽的話，屬「馬」者。",酉:"酉刑酉：容易主動為人相挺講義氣，太過熱情幫助別人變難婆，別人的事情到頭來變成自己的事，有功無賞打破要賠，不受感激，而鬱卒。",亥:"亥刑亥：聰明，智慧，很自律很明理有時又不明理，很盧、有理說不清，有事不說話來的嚴重鬱卒，容易想不開，內心需適當抒發。亥刑亥自刑代表無形的壓力與挫折，責怪自己又不願表達。"};
 // 三合局特質（教材P.38）
 const SAN_HE_CHAR={"水":"申子辰合水局：執行力佳，很有智慧，想法多元變化大，很聰明但冷漠、自私。","金":"巳酉丑合金局：外表威嚴嚴肅有肅殺之氣，執行力佳，講話會修飾包裝自己，講義氣，較強出頭，易有血光之災。","火":"寅午戌合火局：做事效率高執行力佳，急性子行動派，脾氣大，前熱後冷「頭燒尾冷冷」，做事無法有始有終，熱情有禮。","木":"亥卯未合木局：比較會有愛幻想不切實際的想法，心地軟，計畫一大堆無法實現。"};
-const TG_HE_LIST=[["甲","己","土","中正之合","甲為己之官，己為甲之財。中規中矩，一板一眼，不懂情調；講信用，重承諾；為人正派，不會亂來。"],["乙","庚","金","仁義之合","庚為乙之官，乙為庚之財。重義氣，仁義；個性剛強，亦不懂情趣。"],["丙","辛","水","威制之合","丙為辛之官，辛為丙之財。表桃花（人緣好）；情趣，氣質好。"],["丁","壬","木","淫暱之合","壬為丁之官，丁為壬之財。重品味，風情萬種；重情調，非常有異性緣。"],["戊","癸","火","無情之合","戊為癸之官，癸為戊之財。重情調，喜歡成熟的異性；容易翻臉像翻書一樣。"]];
+const TG_HE_LIST=[["甲","己","土","中正之合","這兩個天干像是合夥做正經生意的夥伴，個性中規中矩、一板一眼，不太懂浪漫情調。重視承諾、講信用，為人正派，不容易做出越線的事。"],["乙","庚","金","仁義之合","這組合帶有重義氣、講道理的味道，個性都偏剛強直接，雖然不太懂得營造情趣，但相處起來讓人覺得可靠。"],["丙","辛","水","威制之合","這組合容易帶來不錯的人緣和桃花運，氣質和品味都會被加分，是個讓人覺得有魅力、有情調的組合。"],["丁","壬","木","淫暱之合","這組合很重視生活品味，異性緣特別旺，相處起來浪漫又有情調，但也要小心過度沉迷享樂。"],["戊","癸","火","無情之合","這組合容易吸引成熟穩重的對象，重視情調和氛圍，但感情變化也快，容易說變就變、翻臉像翻書。"]];
 const LIFE_STAGES=[{label:"年",age:"1–16歲",stage:"少年・根",tg:"祖父、父親、長輩",dz:"祖母、母親、長輩"},{label:"月",age:"17–32歲",stage:"青年・苗",tg:"兄弟姊妹、平輩",dz:"本人內在個性"},{label:"日",age:"33–48歲",stage:"壯年・花",tg:"本人外在個性",dz:"配偶、創業點"},{label:"時",age:"49–64歲",stage:"老年・果",tg:"子孫晚輩",dz:"子孫晚輩"}];
 const SACRED={1:[{n:"玉皇大帝聖誕",d:9},{n:"天官大帝聖誕",d:15}],2:[{n:"土地公聖誕",d:2},{n:"文昌帝君聖誕",d:3},{n:"媽祖聖誕",d:23}],3:[{n:"玄天上帝聖誕",d:3},{n:"觀世音菩薩聖誕",d:19}],4:[{n:"關聖帝君聖誕",d:24},{n:"神農大帝聖誕",d:26}],5:[{n:"城隍爺聖誕",d:11}],6:[{n:"關聖帝君飛昇",d:24}],7:[{n:"地官大帝聖誕・中元普渡",d:15}],8:[{n:"土地公聖誕",d:15},{n:"觀世音成道",d:22}],9:[{n:"九皇大帝聖誕（初一至初九）",d:1},{n:"鬥姥元君聖誕",d:9},{n:"觀世音出家",d:19}],10:[{n:"水仙尊王聖誕",d:10},{n:"下元水官聖誕",d:15}],11:[{n:"太乙救苦天尊聖誕",d:11},{n:"南斗星君聖誕",d:17}],12:[{n:"送神日",d:24},{n:"天地開界・迎玉皇",d:25}]};
-const TG_BY={甲:{zf:"肝、膽",bw:"頭部",desc:"注意肝膽功能與頭部問題，木旺易疲勞，宜早睡養肝。"},乙:{zf:"肝、膽",bw:"頸項",desc:"注意肝膽與頸部問題，情緒影響肝氣，宜舒緩壓力。"},丙:{zf:"心、小腸、三焦",bw:"肩膀、眼睛",desc:"注意心臟、血壓、小腸與肩膀眼睛。三焦亦向丙中寄（上焦含心肺，中焦含脾胃肝膽，下焦含腎大腸小腸膀胱）。"},丁:{zf:"心、心包、小腸",bw:"心臟、眼睛",desc:"注意心臟、血壓、眼睛，心包同歸入丁方。過度用神易心火旺，第六感強者更需注意過勞。"},戊:{zf:"脾、胃",bw:"腹脅",desc:"注意胃部與腹脅，消化系統易出問題，忌暴飲暴食。"},己:{zf:"脾、胃",bw:"腹脅",desc:"注意胃部與腹脅，思慮過多易傷脾胃，宜規律飲食。"},庚:{zf:"肺、大腸",bw:"臍輪、牙齒",desc:"注意肺部、支氣管、大腸與牙齒，忌傷風感冒。"},辛:{zf:"肺、大腸",bw:"大腿（股）、牙齒",desc:"注意筋骨、牙齒、肺部、支氣管，情緒易傷肺。"},壬:{zf:"腎、膀胱",bw:"小腿（脛）",desc:"注意膀胱、腎臟與小腿，腎水虧損易腰痠。"},癸:{zf:"腎、膀胱",bw:"足部",desc:"注意膀胱、腎臟與足部，陰虛體質需多休息。"}};
-const DZ_BY={子:{zf:"膽",st:"23–01",desc:"注意膽囊功能，睡眠品質影響膽氣，易焦慮失眠。"},丑:{zf:"肝",st:"01–03",desc:"注意肝臟功能，易有肝膽或筋骨問題，忌熬夜。"},寅:{zf:"肺",st:"03–05",desc:"注意肺部，易有呼吸系統疾患，天亮前需保暖。"},卯:{zf:"大腸",st:"05–07",desc:"注意大腸健康，宜養成規律排便習慣。"},辰:{zf:"胃",st:"07–09",desc:"注意胃部消化，易有胃炎或消化不良，宜規律早餐。"},巳:{zf:"脾",st:"09–11",desc:"注意脾臟，易有消化吸收問題，忌生冷食物。"},午:{zf:"心",st:"11–13",desc:"注意心臟血壓，情緒易影響心血管，午休有益。"},未:{zf:"小腸",st:"13–15",desc:"注意小腸吸收，易有腹脹，需細嚼慢嚥。"},申:{zf:"膀胱",st:"15–17",desc:"注意膀胱與泌尿系統，多喝水有助排毒。"},酉:{zf:"腎",st:"17–19",desc:"注意腎臟功能，易有腰腎或生殖系統問題。"},戌:{zf:"心包",st:"19–21",desc:"注意心包、情緒與神經系統，晚間宜放鬆。"},亥:{zf:"三焦",st:"21–23",desc:"注意三焦代謝，易有內分泌問題，宜早睡養生。"}};
-const WX_HEALTH={木:{zf:"肝、膽（免疫力系統）",que:"免疫力弱、眼睛疲勞、筋骨僵硬、情緒煩躁",wang:"肝火旺、易怒、頭痛、眼紅、失眠"},火:{zf:"心、小腸（循環系統）",que:"心悸、血液循環差、手腳冰冷、失眠多夢",wang:"心火旺、焦慮、口舌生瘡、血壓偏高"},土:{zf:"脾、胃（消化系統）",que:"消化不良、食慾不振、腹脹、四肢無力",wang:"脾胃濕熱、口臭、腹瀉、過度思慮"},金:{zf:"肺、大腸（呼吸系統）",que:"氣虛咳嗽、皮膚乾燥、易感冒、便秘",wang:"肺氣盛、皮膚問題、鼻炎、過敏"},水:{zf:"腎、膀胱（泌尿生殖）",que:"腰膝痠軟、耳鳴、夜尿多、記憶力衰退",wang:"腎水過盛、浮腫、恐懼感重、排尿異常"}};
-const TG_CHAR={甲:{traits:["仁慈，喜歡當老大壯大紮根，腳踏實地","有個性，有志氣，心地善良忠厚，有骨氣，領袖慾強，不服輸","做事比較保守穩重（有一萬花八千），故成功機率大","做事在意別人的重視：多誇讚就勇往直前，若不受人重視，做沒多久就離職","喜歡簡單明瞭，不喜歡囉唆，也不喜歡受人管，心軟性硬（吃軟不吃硬）","易疲勞，注意肝、膽、頭"],note:"身強宜財官食傷，適合發揮領導才能；身弱宜印比扶持。"},乙:{traits:["較沉著，蓄勢待發，計劃型，宜當（幕後）老闆","有個性，心性較有變化，變動靈敏，機警，有野心善於參謀","心軟，做事不欲人知，喜暗鬥不喜明爭","野心大，一次做很多事，大好大壞；建議一次做一事，否則易失敗，易疲勞","注意肝、膽、項"],note:"身強宜偏財，適合幕後操盤；身弱宜印比相助。"},丙:{traits:["好客，熱情，個性急，暴躁，易衝動生氣","為人熱心，喜歡照顧關懷別人，內心感情豐富，不擅表現於言語","有禮貌，忠實聽眾（但左耳進右耳出）","待人處事，較不拘小節，不堪別人諷刺，對人好時非常熱情","注意眼睛、血壓、小腸、肩膀"],note:"身強鋒芒外露宜洩氣；身弱需印比相助。"},丁:{traits:["有禮貌、有同情心、熱心","思考較為細膩，直覺較強，喜歡照顧關懷別人，內心感情豐富","第六感佳，注重第一印象（第一眼眼緣不佳即不再與之來往），故常讓人感覺不易相處","凡事外表沉著，內心急躁，能洞察人心","注意眼睛、血壓、小腸、心臟。可隨身攜帶行動護身符小羅盤"],note:"身強宜財官洩秀；身弱需印星庇護。"},戊:{traits:["個性爽朗，有話直說","穩健踏實，有耐心包容力強，寬大為懷的心胸","為人重誠信，守諾言，憎恨不守信用的人，默默耕耘","固執（不承認），常懷才不遇（認真做事沒人誇，但如果一摸魚就容易被抓包）","注意胃、腹脅的疾病"],note:"身強宜財官食傷；身弱宜火土印比。"},己:{traits:["精明能幹，主觀意識強，有叛逆的個性，常覺得不易溝通","重誠信，守諾言，恨不守信的人","有事較會放在內心，默默耕耘","固執（不承認），常懷才不遇（認真做事沒人誇，但如果一摸魚就容易被抓包）","頭腦好能力強，越老越固執，不喜歡被否決","注意胃、腹脅疾病"],note:"身強可任財官；身弱需火印生扶。"},庚:{traits:["講義氣，是非分明，剛毅果決，不拘小節","眼光犀利，感覺敏銳，喜歡直來直往，不喜歡拐彎抹角","對事情的批評喜歡單刀直入（故常傷人而不自知）","急性、脾氣壞、不佔人便宜，不欠人人情，吃軟不吃硬，一起花費常先付帳","走運時氣勢旺，威力強，目美音佳","注意牙齒、肺、支氣管、大腸、臍輪"],note:"身強宜官財洩秀；身弱宜土印生助。"},辛:{traits:["重義氣，有豐富的感情，拘小節，眼光犀利，感情敏銳溫文儒雅","對事情的批評喜歡冷嘲熱諷","較柔性，有氣質","說話較收斂但也銳利，喜歡拐彎抹角傷人，易為錢煩惱，故腦神經較衰弱","注意筋骨、牙齒、肺、支氣管、大腸、股（大腿）"],note:"身強宜財官為用；身弱需土金印比。"},壬:{traits:["智慧，聰明，小時候除非貪玩，不然都很會讀書","做錯事除非當面揭穿否則概不承認","較不接受別人意見，野心大（做事）故常大好大壞，但成功機會高（因聰明）","外向，活潑，任性，做事機警，善把握良機，交際廣，人緣佳","能見風轉舵，危險就走人，善於商業經營，膽大心細，反應快，易順勢為己","不服輸，走運時企圖心極佳，似要淹沒整個村莊，注意膀胱、腎、脛"],note:"身強宜財官洩氣；身弱宜金水印比。"},癸:{traits:["智慧","個性內向、善忍，悶葫蘆個性","足智多謀，善算計，交際廣，人緣佳，巧於靈機應變，善於商業經營，謀定而動","易適應環境，會順勢而為，看似平靜但暗藏漩渦","要令屬水之人心服口服需經一番計劃","注意膀胱、腎、足"],note:"身強宜財官食傷；身弱宜金印扶助。"}};
-// 五行完整屬性表（教材P.8）
-const WX_TABLE={木:{color:"青",zang:"肝",fu:"膽",xitong:"免疫力系統",wei:"酸",ye:"淚（肝開竅於目）",xiu:"臊",chang:"仁",fang:"東",ji:"春",month:"1–3月"},火:{color:"赤",zang:"心",fu:"小腸",xitong:"循環系統",wei:"苦",ye:"汗（心之液）",xiu:"焦",chang:"禮",fang:"南",ji:"夏",month:"4–6月"},土:{color:"黃",zang:"脾",fu:"胃",xitong:"消化系統",wei:"甘",ye:"涎（脾之液）",xiu:"香",chang:"信",fang:"中",ji:"四季",month:"四季"},金:{color:"白",zang:"肺",fu:"大腸",xitong:"呼吸系統",wei:"辛",ye:"涕（肺之液）",xiu:"腥",chang:"義",fang:"西",ji:"秋",month:"7–9月"},水:{color:"黑",zang:"腎",fu:"膀胱",xitong:"泌尿生殖",wei:"鹹",ye:"唾（腎之液）",xiu:"腐",chang:"智",fang:"北",ji:"冬",month:"10–12月"}};
-// 天干身體部位（甲頭乙項丙肩求...）
-const TG_BODY={甲:"頭",乙:"頸項",丙:"肩膀",丁:"心臟",戊:"腹脅",己:"腹脅",庚:"臍輪",辛:"大腿（股）",壬:"小腿（脛）",癸:"足部"};
-// 地支身體部位（午頭巳未兩肩均，左右二膊是辰申，卯酉雙臂寅戌腿，丑亥屬腳子為陰）
-const DZ_BODY={午:"頭",巳:"兩肩",未:"兩肩",辰:"左右手臂",申:"左右手臂",卯:"雙臂",酉:"雙臂",寅:"雙腿",戌:"雙腿",丑:"腳",亥:"腳",子:"生殖器官（陰）"};
-const DZ_CHAR={子:{sx:"鼠",nx:"聰明靈動但多慮，外柔內剛",traits:["善於保護自己，聰明","有雙重個性，難捉摸，沒有原則，猶豫不決（做也後悔，不做也後悔）","善變，隱藏實力，心口不一","個性極端，遇不能解決事情時會有鴕鳥心態","注意膽"]},丑:{sx:"牛",nx:"踏實勤勞，有韌性但過於固執",traits:["老實，牛脾氣（脾氣大）","苦幹，腳踏實地，忍辱負重","打破砂鍋問到底，主觀（只要認同後，做事非常認真）","很會碎唸，很會查行蹤，常追根究柢，翻舊帳，任勞任怨","注意肝"]},寅:{sx:"虎",nx:"開創力強，衝勁十足但難以持久",traits:["仁慈","領導人，愛漂亮，具權威","象徵行動力，開創力，但持續力較不足","好動，坐不住，越大聲越不怕，有爆發力","喜歡當老大，較會計較","沒事做時會似生病","喜獨來獨往，不喜歡被人管，應防車關","注意肺"]},卯:{sx:"兔",nx:"溫和細膩，重感情，直覺靈敏",traits:["仁慈","有桃花，但沒膽，衝動善變，喜乾淨","眼光佳（第一眼覺得不好就不理人），故讓人覺得眼光高","工作一定做完才休息（有始有終）","第六感強","注意大腸","可隨身攜帶行動護身符小羅盤"]},辰:{sx:"龍",nx:"主觀強烈，創意豐富，自我意識高",traits:["眼光高，喜當老大","思想變化快，聰明自負，點子多不切實際","主觀重，固執，不喜歡人管","較不信天命，會自圓其說，神秘（見首不見尾）","五術高手，鐵齒，愛聽好話，自刑","注意胃"]},巳:{sx:"蛇",nx:"思維敏銳，觀察力強，疑心較重",traits:["熱情，好客（但較為認生），好辯","警覺性高，行動快，持久","觀察敏捷，猜疑心重","冷靜，冷酷，好動，不服輸","喜歡聊天，分析能力強，足智多謀","適合業務推廣，應防車關","注意脾臟"]},午:{sx:"馬",nx:"熱情奔放，情緒起伏大，易受影響",traits:["好動，奔放，不受拘束","好勝心強，禁不起刺激，必有回應","耳根子軟，易受人煽動影響","喜歡被拍馬屁，好勝心強，不能受刺激","事情認定後能日行千里，翻臉快，易被設計上當，自刑","注意心臟"]},未:{sx:"羊",nx:"溫柔細心，依賴性強，感情豐富",traits:["注重外表，喜往外跑","膽小，依靠別人","很孝順但不會表達","打破砂鍋問到底，追根究柢","主觀重，固執，感情專注，忠貞，易翻舊帳","注意小腸"]},申:{sx:"猴",nx:"機智靈活，反應快，但容易衝動",traits:["急性，脾氣壞","沒耐性等待，想到就做","較沒心機，善變模仿力強，喜歡走捷徑","說話銳利，傷人不自知","做事手腳俐落，學習力強，靜不下來","注意膀胱"]},酉:{sx:"雞",nx:"熱心助人，執行力強，直率有時過頭",traits:["講義氣，熱心過頭（雞婆），別人發生事情常會義不容辭幫忙","說話直，傷人不自知","人緣好，勤奮，很有愛心","做事很投入，好講話，欠思考，較藏不住秘密","判斷力強，神經質，很會喝酒、不然就是滴酒不沾","注意腎臟"]},戌:{sx:"狗",nx:"忠誠可靠，固執護主，但難以溝通",traits:["主觀意識強，固執，自尊心強","很忠心（被其認同，願為之赴湯蹈火；被他認同的人，誰也不可以批評），較不信天命較鐵齒","鬼點子多，不好溝通（稱讚他就好溝通）","可當生死之交，頑固，重感情","注意心包（心外包膜）"]},亥:{sx:"豬",nx:"智慧深藏，看似軟弱但意志堅定",traits:["聰明，有口福，好享受","明理，智慧高但開創力低，要知道內心世界才能溝通，常追根究柢","對於餐廳蠻講究的，扮豬吃老虎，個性內向","鑽牛角尖，觀念轉不過來（一就是一），重原則","話都放在心裡，口才佳，善利用人，自刑最嚴重者","注意三焦（上焦含心肺，中焦含脾胃肝膽，下焦含腎大腸小腸膀胱）"]}};
-const SS_DETAIL={比肩:{rep:"兄弟、朋友、獨立自主、自尊",traits:"樂觀進取、守本分、重朋友；主觀，容易爭執，好勝不服輸、自私。賺的錢都會和他人分享，身強者生活環境中常與他人爭搶，同時一定出現競爭者，感情困擾纏身（比較會失戀），好勝不服輸，善交際好客。身弱有走運時有助力，喜歡我行我素，不喜歡被束縛，決定一件事後任何人都無法改變他。",qiang:"競爭意識強，生活環境中常與人爭搶，出現競爭者感情困擾，需注意不與人強爭，理財謹慎，不宜跟會。",ruo:"自我意志弱，容易優柔寡斷，走運時有助力，需培養自信與決斷力。",note:"不論身強身弱皆需合掉。絕對不要跟會（比肩奪財）。年柱：小時候很獨立，容易失戀，家境不好，壓力大。月柱：代表朋友兄弟姊妹，有錢時朋友多、沒錢時就無人過問。時柱：事業上和同事競爭壓力大，容易得罪人，晚年易有敗家子出現。"},劫財:{rep:"姊妹、競爭、野心、表現慾",traits:"外表樂觀，但內心想不開，異性朋友多最好晚婚。好客、能力好、容易丟東西、做事有頭無尾。有表現慾、口才好，比較容易被說服，不擅理財，不要與人合夥。賺的錢都會和他人分享，不管身強或身弱都需合掉。",qiang:"財務起伏大，異性朋友多，感情易有波折，宜晚婚。比＋劫同時出現（比劫過重）：錢不要借人，不要跟會，不要合夥，易被劫走，一生感情困擾。",ruo:"需注意朋友借錢問題，謹慎財務共享。男命帶劫，容易失戀，婚前交女友易有人爭，對妻子較沒安全感。",note:"不論身強身弱皆需合掉。最好晚婚。有財庫遇比劫一樣沒有庫，走劫年錢財要控制。劫財於任一柱時，戀愛的另一半會出現追求者，失戀機會很大，且是動情刻骨銘心的失戀。"},食神:{rep:"才華（智慧）、食祿（祿壽）、較傳統",traits:"較會接受遵循傳統的技術，配合自己的才華發展，可當研發人員，溫文儒雅，樂觀進取，較能靜下來，長的不錯，個性直，斯文型，是天廚格，會做菜，到虛都有的吃，有口福。女命以食傷論子息。",qiang:"身強為真才華（較能賺錢），能賺錢，適合發展個人特色。",ruo:"身弱者一定要合掉，表假才華（無法用來賺錢），身體較不好，樣樣都想學，卻樣樣都不精。",note:"食神可制殺，想兌也兌不起來，權勢被制。食神被合，才華不能展現，決策易失誤，嚴重時生命有危險，亦會危及子女。食神逢偏印，假貴人被奪走才華，前功盡棄，常遭陷害，被扯後腿，一生多敗少成，或常逢意外之災、血光之災，要注意生命安全。流年食＋偏印，女命易流產，不易生男生。本命偏印＋食，流年走才，事業會瓦解。"},傷官:{rep:"子女、才華（突破）、批評家",traits:"善變性獨特性，善諷刺，貪做，孤僻性（龜毛），喜歡獨創奇招，點子變化彈性大，話中常帶諷刺之語（身強者較會給對方出難題），愛好自由，任性，悲觀，追求完美。女孩子長得漂亮，男孩子長的帥。考運不好，脾氣暴躁。食傷同現，才華亦不穩定，重邏輯，表現慾強，多學不專，急性喜自由，易感動。",qiang:"思維犀利，適合創新突破，對社會較有不滿情緒，標準的批評家，身強易顯，但需收斂言辭。",ruo:"才華難以發揮，身弱者，受你幫助最多的人，也是最容易陷害你的人。",note:"不論身強身弱皆需合掉。女命最好晚婚，因愛夫而管夫唸夫，容易婚變。男命龜毛白目奇招特多。食＋傷，桃李滿天下。流年走傷，做事不順，考運差，遇正官年傷官見官，為禍百端，會有牢獄血光官司，千萬不要做擔保。"},正財:{rep:"錢財、妻子（男命）、家庭責任",traits:"克勤克儉，為人正派，有家庭責任，滿足慾低，較喜歡住在熱鬧的地方，有歡喜心，笑容樂觀，賺錢的機會較多，較好溝通，欠缺恆心。男命有財會疼妻子，無財者不易找到妻子，且不知疼惜。",qiang:"出社會很快會賺到錢，很會花錢，不重視錢。身強者，較有機會收成。",ruo:"異性緣好，賺錢辛苦，財來財去難以積累，晚年較留不住錢財。",note:"天干有財、才，地支無庫，一生財來財去。財＋印的話，財會壞印，遇比劫年注意破財損身，男命＝妻子，與母親較不合，易有婆媳問題。財遇比肩及劫財，應注意生命與身體健康。日主合正財者，感情專一，保守，喜不動產，易滿足。男命太歲合正財，妻子可能跑掉或看不到，對妻子沒安全感。"},偏財:{rep:"父親、妾（偏財）、疏財重義",traits:"較不重視錢財，善理財，疏財重義，慷慨豪邁，賺錢比一般人容易且快，大小錢都要賺，但錢財也流失的快，較無固定財源與不動產。男命有才表妾，易有婚外情，且不怕妻子知道，重妾不重妻（尤其逢才年），男命財＋才＝大小通吃，一生感情困擾。",qiang:"身強能守，能守財，適合商業投資，廣結善緣。才養殺，女命身強是較風情萬種。男命才養殺，是色求多，養妾機率高。",ruo:"身弱逢財、才必破財，會財來財去。身弱為壓力、災難。",note:"才重疊只愛妾不愛妻（參考），很會規劃錢財。才被合，開支大，生意會賠錢，如遇梟印奪食和傷官見官時，錢財流失大。流年走偏才，父親身體狀況差。八字無財、才，不會疼妻子，男命財旺，易離婚。"},正官:{rep:"名聲地位、官職、丈夫（女命）",traits:"男命以官殺論子息，光明正大，保守，愛面子不積極，（明）公關佳，有正義感，有優越感，固執，大男人主義，臉長的較四方，有舞臺容易發揮，優柔寡斷，考運好，會念書（但碰到傷官年考運較不好）。女命，有異性緣，感情固定。",qiang:"一生有名聲地位，官運亨通。身強有官、殺，一生名聲地位有。",ruo:"身弱則是非多，災難壓力。官多身弱者，身體不好、體弱多病、壓力也大（身弱不得任財官）。",note:"官怕遇傷，流年遇傷，會有血光之災，名聲地位沒有了。女命流年合官，注意老公身體。流年出現傷官，考運會很差，也會產生職位變動或被奪。本命傷官見官，禍害連身，如傷官見官或正官被流年合，兩者任一，會有一好沒兩好。女命有官、殺同現，容易會有感情困擾。女命正官出現早，早婚機率高且早。"},七殺:{rep:"壓力挑戰、領導力、凶悍氣躁",traits:"代表凶悍氣躁，專制霸道。領導能力強，能軟能硬，有機會掌權，眉毛較粗，果斷力強，積極，敢愛敢恨，阿莎力，（暗）公關能力佳，口才好，表情看來嚴肅，對事業積極能幹，適應能力好。遇食制殺，權勢會顯現不出來。",qiang:"可化煞為權，成為強勢領導者。女命身強，玩弄男人於掌心（有操控權）。官＋殺＝異性緣好。",ruo:"身弱一生多災多難，血光，小人不斷，官災是非多。身弱會被男人欺負，表壓力，災難，傷官，女更辣，男更兇。需以印星化殺。",note:"殺多萎靡不振。帶殺，無花無財會一臉嚴肅。食神制殺，會兌不起來，沒有權勢。逢殺或殺多者，表災難（意外、官司），應多加小心。女命應注意婚外情，一生感情困擾。身強若流年來合殺，注意事業與身體。"},正印:{rep:"母親、貴人、學問",traits:"代表母親、貴人。富同情心，仁厚，主觀性強，熱衷宗教，悲觀，懦懦，反應不佳，不喜聽取他人意見，不重視錢財，固執，所居住地以安靜居多。自命清高，依賴性，有同情心，異中求同。",qiang:"身強走印，好比五鬼纏身，必須合掉，否則易成小人纏身之局。身強不喜印，會轉成小人。",ruo:"為真貴人，有長輩庇護，學習能力強，宜進修深造。身弱者，父母疼愛，跟母親因緣深，但溝通不好，長上朋友會互相幫忙。",note:"印被流年合，要注意母親身體。男命財＋印＝會有婆媳問題。流年走正印，母親身體狀況差。正印與偏印不同，正印好溝通，偏印不易溝通。正印是正貴人，偏印有時是小人。身弱正印或偏印被合，會出事機率高（貴人不現），母親的靜、動態應多加注意。"},偏印:{rep:"貴人（需分辨）、直覺、梟神",traits:"代表貴人，身強一定要合掉。反應靈敏，獨樹一格，警覺多疑（疑神疑鬼），最相信自己（會設防別人），往往不接受別人的見解（主觀意識強），常斷送財路，叛逆心強，處事多趨極端，沉穩，神秘，梟雄，霸道，愛好革新，好取替別人思想，鑽牛角尖。天生辯論家，設計與企劃能力很好，領導格，洗腦專家，有他在輪不到你講話，思緒很廣，才華與會察言觀色，易指出別人的缺點，同中求異。樂觀不怕挫折，經手之錢很多。",qiang:"為梟神，奪食傷，必須合掉，否則易遭陷害。身強，喜外出，投資或女人花錢。偏印多，好勝逞強、好辯，愛好革新，偏印多身體會不好。",ruo:"為真貴人，直覺靈敏，適合研究創新、靈性探索。殺逢偏印，身弱者會有權威。",note:"偏印逢梟印奪食，一生常遭陷害，被扯後腿，一生多敗少成，或常逢意外之災，命喪身亡。偏印奪食需注意，以戊字合偏印化解。流年走印、偏印想法消極，印年會想買不動產。印＋偏印，主觀但容易反覆無常，反而不易成功。身強不喜印，會轉成小人。"}};
+const TG_BY={
+甲:{zf:"肝、膽",bw:"頭部",desc:"這個天干跟肝膽功能、頭部健康關係最密切。木氣旺的人容易感到疲勞，建議養成早睡的習慣，對肝臟比較有幫助。"},
+乙:{zf:"肝、膽",bw:"頸項",desc:"這個天干主要對應肝膽和頸部，情緒起伏比較容易影響肝氣的運作，平時要多注意舒緩壓力，放鬆肩頸。"},
+丙:{zf:"心、小腸、三焦",bw:"肩膀、眼睛",desc:"這個天干跟心臟、血壓、小腸的健康關係比較大，也容易影響肩膀和眼睛。中醫講的三焦系統（包含上半身的心肺、中段的脾胃肝膽、下段的腎臟腸道）也跟這個天干有關聯，平時要留意血壓和用眼過度的問題。"},
+丁:{zf:"心、心包、小腸",bw:"心臟、眼睛",desc:"這個天干主要對應心臟、血壓和眼睛，心包（保護心臟的部分）的健康也跟它有關。比較容易因為用腦過度而出現心火偏旺的狀況，第六感比較敏銳的人尤其要留意不要太過勞累。"},
+戊:{zf:"脾、胃",bw:"腹脅",desc:"這個天干主要對應胃部和腹脅，消化系統容易出狀況，平時要避免暴飲暴食，飲食盡量規律一點。"},
+己:{zf:"脾、胃",bw:"腹脅",desc:"這個天干跟胃部、腹脅的健康有關，思慮過多的時候容易傷到脾胃，建議飲食要規律，盡量別讓自己想太多。"},
+庚:{zf:"肺、大腸",bw:"臍輪、牙齒",desc:"這個天干主要對應肺部、支氣管、大腸跟牙齒的健康，平時要避免著涼感冒，注意呼吸道保養。"},
+辛:{zf:"肺、大腸",bw:"大腿（股）、牙齒",desc:"這個天干跟筋骨、牙齒、肺部和支氣管的健康有關，情緒比較容易影響肺部，建議多留意呼吸系統和心情調適。"},
+壬:{zf:"腎、膀胱",bw:"小腿（脛）",desc:"這個天干主要對應膀胱、腎臟和小腿的健康，腎水若虧損容易出現腰痠的狀況，平時要注意保暖跟休息。"},
+癸:{zf:"腎、膀胱",bw:"足部",desc:"這個天干跟膀胱、腎臟和足部的健康有關，體質偏陰虛的人需要多休息，避免過度消耗體力。"}
+};
+// 命盤地支對應：命盤裡帶有這個地支，容易影響的身體部位（與命盤本身有關，跟時辰無關）
+const DZ_BY={
+子:{zf:"膽",desc:"命盤中帶有「子」這個地支，對應到的身體部位主要是耳朵和膽囊。睡眠品質會直接影響膽氣的運作，平時容易因為作息不規律而感到焦慮或不容易入睡，建議養成早睡的習慣。"},
+丑:{zf:"肝",desc:"命盤中帶有「丑」這個地支，對應到的身體部位主要是兩肩和肝臟。容易有肩頸僵硬或肝膽方面的小問題，平時要避免熬夜，讓肝臟有足夠的時間修復。"},
+寅:{zf:"肺",desc:"命盤中帶有「寅」這個地支，對應到的身體部位主要是兩側肋骨和肺部。呼吸系統比較容易出狀況，平時要多注意保暖，避免感冒。"},
+卯:{zf:"大腸",desc:"命盤中帶有「卯」這個地支，對應到的身體部位主要是肝部和大腸。腸道健康需要多留意，建議養成規律排便的習慣，飲食也盡量清淡一點。"},
+辰:{zf:"胃",desc:"命盤中帶有「辰」這個地支，對應到的身體部位主要是胸部和胃部。消化系統容易出狀況，建議飲食規律，避免暴飲暴食。"},
+巳:{zf:"脾",desc:"命盤中帶有「巳」這個地支，對應到的身體部位主要是咽喉和脾臟。消化吸收方面要多留意，建議避免吃太多生冷的食物，也要照顧好呼吸道。"},
+午:{zf:"心",desc:"命盤中帶有「午」這個地支，對應到的身體部位主要是心臟。情緒起伏比較容易影響心血管健康，平時要多注意血壓，保持心情平穩。"},
+未:{zf:"小腸",desc:"命盤中帶有「未」這個地支，對應到的身體部位主要是脊樑和小腸。腸道吸收功能要多留意，吃飯時建議細嚼慢嚥，減輕腸胃負擔。"},
+申:{zf:"膀胱",desc:"命盤中帶有「申」這個地支，對應到的身體部位主要是經絡和膀胱。泌尿系統需要多注意，建議多補充水分，有助於身體排毒。"},
+酉:{zf:"腎",desc:"命盤中帶有「酉」這個地支，對應到的身體部位主要是精血和腎臟。腎臟功能要多留意，容易有腰部或生殖系統方面的小問題，平時要多加保養。"},
+戌:{zf:"心包",desc:"命盤中帶有「戌」這個地支，對應到的身體部位主要是命門和心包。情緒和神經系統比較敏感，平時要多讓自己放鬆，避免壓力累積過大。"},
+亥:{zf:"三焦",desc:"命盤中帶有「亥」這個地支，對應到的身體部位主要是頭部，也跟中醫講的三焦代謝系統有關。容易有內分泌方面的小問題，建議盡量早睡，作息規律一點。"}
+};
+
+// 十二時辰養生：不論命盤如何，每天走到這個時段，對應的臟腑正在運作
+const HOUR_HEALTH={
+子:{st:"23–01",zf:"膽",desc:"現在走到子時，膽經正在運作，這段時間應該已經進入熟睡，有助於膽汁正常分泌、幫助身體代謝修復。"},
+丑:{st:"01–03",zf:"肝",desc:"現在走到丑時，肝經正在運作，是肝臟解毒修復的關鍵時段，這時候熟睡對肝臟健康特別重要。"},
+寅:{st:"03–05",zf:"肺",desc:"現在走到寅時，肺經正在運作，肺部在這個時段進行氣血的調節與分配，建議保持熟睡狀態，避免著涼。"},
+卯:{st:"05–07",zf:"大腸",desc:"現在走到卯時，大腸經正在運作，是腸道蠕動排便的好時機，起床後喝杯溫水有助於腸道順暢。"},
+辰:{st:"07–09",zf:"胃",desc:"現在走到辰時，胃經正在運作，是吃早餐的最佳時段，這個時候進食有助於營養吸收。"},
+巳:{st:"09–11",zf:"脾",desc:"現在走到巳時，脾經正在運作，脾臟在這個時段負責消化吸收，精神狀態通常會比較好，適合處理重要的事情。"},
+午:{st:"11–13",zf:"心",desc:"現在走到午時，心經正在運作，是心臟最活躍的時段，建議中午稍作休息，午休片刻對心臟很有幫助。"},
+未:{st:"13–15",zf:"小腸",desc:"現在走到未時，小腸經正在運作，是消化吸收的重要時段，飯後不要馬上劇烈活動，讓腸胃好好工作。"},
+申:{st:"15–17",zf:"膀胱",desc:"現在走到申時，膀胱經正在運作，是身體排毒代謝的好時機，這段時間多補充水分會特別有幫助。"},
+酉:{st:"17–19",zf:"腎",desc:"現在走到酉時，腎經正在運作，腎臟在這個時段進行能量儲存，建議放慢生活節奏，不要太晚還在拼命工作。"},
+戌:{st:"19–21",zf:"心包",desc:"現在走到戌時，心包經正在運作，這段時間適合放鬆心情，看看書、聽音樂，讓情緒慢慢沉靜下來。"},
+亥:{st:"21–23",zf:"三焦",desc:"現在走到亥時，三焦經正在運作，是身體準備進入休息狀態的時段，建議開始放慢腳步，準備就寢。"}
+};
+const DZ_BODY={子:"耳",丑:"兩肩",寅:"兩肋",卯:"肝部",辰:"胸部",巳:"咽喉",午:"心臟",未:"脊樑",申:"經絡",酉:"精血",戌:"命門",亥:"頭部"};
+const WX_HEALTH={
+木:{zf:"肝、膽（免疫力系統）",que:"木的能量偏弱，免疫力可能比較差，容易感到眼睛疲勞、筋骨僵硬，情緒上也比較容易煩躁不安。",wang:"木的能量偏旺，肝火容易比較大，個性容易急躁易怒，常有頭痛、眼睛紅腫或睡不好的狀況。"},
+火:{zf:"心、小腸（循環系統）",que:"火的能量偏弱，容易感到心悸，血液循環也比較差，手腳容易冰冷，晚上睡覺多夢不安穩。",wang:"火的能量偏旺，心火容易比較大，情緒上容易焦慮緊張，常有口腔潰瘍或血壓偏高的狀況。"},
+土:{zf:"脾、胃（消化系統）",que:"土的能量偏弱，消化系統比較弱，容易食慾不振、肚子脹氣，整個人容易感到四肢無力。",wang:"土的能量偏旺，脾胃容易濕熱，常有口臭或腹瀉的狀況，思慮也容易過多、想太多。"},
+金:{zf:"肺、大腸（呼吸系統）",que:"金的能量偏弱，氣比較虛，容易咳嗽，皮膚也容易乾燥，比較容易感冒或便秘。",wang:"金的能量偏旺，肺氣比較盛，容易有皮膚方面的問題，也比較容易有鼻炎或過敏的狀況。"},
+水:{zf:"腎、膀胱（泌尿生殖）",que:"水的能量偏弱，腰部和膝蓋容易感到痠軟無力，也容易有耳鳴、夜尿頻繁、記憶力變差的狀況。",wang:"水的能量偏旺，身體容易水腫，內心比較容易有不安全感和恐懼感，排尿方面也可能不太順暢。"}
+};
+const WX_TABLE={木:{color:"綠、青",wei:"酸",ye:"淚",chang:"怒",fang:"東",ji:"春"},火:{color:"紅、紫",wei:"苦",ye:"汗",chang:"喜",fang:"南",ji:"夏"},土:{color:"黃、棕",wei:"甘",ye:"涎",chang:"思",fang:"中",ji:"四季交替"},金:{color:"白、金",wei:"辛",ye:"涕",chang:"憂",fang:"西",ji:"秋"},水:{color:"黑、藍",wei:"鹹",ye:"唾",chang:"恐",fang:"北",ji:"冬"}};
+const TG_CHAR={
+甲:{traits:["性格仁慈寬厚，喜歡當領頭羊，做事踏實肯紮根。","有個性也有志氣，心地善良忠厚，領袖慾望強，骨子裡不服輸。","做事偏向保守穩重，雖然機會不多，但成功的機率相對較高。","很在意別人的肯定，被誇獎就會更有動力，若長期不受重視，很快就會選擇離開。","喜歡簡單明瞭的溝通方式，不喜歡被嘮叨或管束，性格外柔內剛，吃軟不吃硬。","體質容易疲勞，平時要多留意肝、膽和頭部的健康。"],note:"身強的人適合往財官食傷的方向發揮領導才能；身弱的人則需要印星和比劫來扶持自己。"},
+乙:{traits:["性格較為沉穩，喜歡先蓄勢待發，做事有計劃，適合當幕後的決策者。","個性鮮明，心思敏感善變，反應機警，野心不小，擅長出謀劃策。","內心柔軟，做事低調不愛張揚，喜歡暗中較勁而不喜歡明著爭鬥。","野心比較大，常常一次想做很多事，容易大起大落，建議專注一件事情，否則容易失敗又疲憊。","平時要多留意肝、膽和頸部的健康。"],note:"身強的人適合發展偏財運勢，適合在背後操盤布局；身弱的人需要印星和比劫的幫助。"},
+丙:{traits:["熱情好客，個性急躁，情緒容易衝動發怒。","為人熱心，喜歡照顧關懷身邊的人，內心感情豐富，但不太擅長用言語表達。","很有禮貌，是個忠實的傾聽者，不過聽完常常左耳進右耳出。","待人處事不拘小節，不太能接受別人的諷刺，對人好的時候會非常熱情。","平時要多留意眼睛、血壓、小腸和肩膀的健康。"],note:"身強的人鋒芒外露，適合找方式洩去過旺的氣；身弱的人則需要印星和比劫的相助。"},
+丁:{traits:["有禮貌、富同情心，待人熱心親切。","思考細膩，直覺敏銳，喜歡照顧關懷別人，內心情感豐富。","第六感很強，特別注重第一印象，如果初次見面感覺不好，往往就不會再深交，因此有時會讓人覺得不易親近。","表面看起來沉著冷靜，但內心其實比較急躁，很能洞察人心。","平時要多留意眼睛、血壓、小腸和心臟的健康，也可以隨身攜帶護身符或小羅盤輔助安定心神。"],note:"身強的人適合往財官方向發揮，洩去秀氣；身弱的人需要印星來庇護自己。"},
+戊:{traits:["性格爽朗，講話直接不拐彎抹角。","個性穩健踏實，很有耐心，包容力強，胸襟寬大。","為人重視誠信，言出必行，最厭惡不守信用的人，習慣默默耕耘不求回報。","固執但通常不會承認，常有懷才不遇的感覺，認真做事卻沒人誇獎，但一旦偷懶就容易被抓包。","平時要多留意腸胃和腹脅部位的健康。"],note:"身強的人適合往財官食傷方向發展；身弱的人需要火土印比來扶持。"},
+己:{traits:["精明能幹，主觀意識強，個性帶點叛逆，常覺得別人不太懂自己。","重視誠信，說到做到，很討厭不守信用的人。","心裡的事情大多藏在心底，習慣默默努力。","固執卻不太承認，常有懷才不遇的感覺，認真做事卻沒人誇獎，但一旦偷懶就容易被抓包。","頭腦聰明能力強，但年紀越大越固執，不喜歡被人否定或反駁。","平時要多留意腸胃和腹脅部位的健康。"],note:"身強的人可以放心承擔財官的責任；身弱的人需要火與印星來生扶自己。"},
+庚:{traits:["講義氣，是非分明，性格剛毅果斷，不拘泥於小節。","眼光犀利，感覺敏銳，喜歡直來直往，不喜歡拐彎抹角。","批評事情時習慣單刀直入，因此常常不自覺就傷了別人的心。","性子急、脾氣不太好，但不愛占人便宜也不喜歡欠人情，吃軟不吃硬，聚會花費常常會搶著先付。","運勢好的時候氣勢特別旺，魄力十足，外型和談吐都頗有魅力。","平時要多留意牙齒、肺部、支氣管、大腸和腹部的健康。"],note:"身強的人適合往官財方向發展，洩去秀氣；身弱的人需要土與印星來幫助自己。"},
+辛:{traits:["很重義氣，感情豐富，但比較注重細節，眼光犀利，內心敏感而舉止溫文儒雅。","批評事情時習慣用比較冷嘲熱諷的方式表達。","個性比較柔和，帶有一種獨特的氣質。","說話雖然收斂，但用詞依然銳利，有時喜歡拐彎抹角地刺人，容易為金錢煩惱，神經也較為敏感緊繃。","平時要多留意筋骨、牙齒、肺部、支氣管、大腸和大腿部位的健康。"],note:"身強的人適合以財官為用；身弱的人需要土金印比來幫助自己。"},
+壬:{traits:["天生聰明有智慧，小時候只要不貪玩，通常都很會讀書。","做錯事情除非被當面揭穿，否則很少主動承認。","比較不容易接受別人的意見，做事野心大，容易大起大落，但因為聰明，成功的機會也相對高。","性格外向活潑，帶點任性，做事機警，懂得把握良機，交際廣闊，人緣很好。","懂得見風轉舵，遇到危險懂得抽身離開，善於經營商業，膽大心細，反應快，容易順勢為自己創造優勢。","個性不服輸，運勢好的時候企圖心特別旺盛，氣勢驚人。平時要多留意膀胱、腎臟和小腿的健康。"],note:"身強的人適合往財官方向發展，洩去過旺的氣；身弱的人需要金水印比來幫助自己。"},
+癸:{traits:["天生聰明有智慧。","個性偏內向，善於忍耐，心思不太外露。","足智多謀，善於算計，交際廣闊，人緣很好，反應靈活機變，善於經營商業，做事謀定而後動。","容易適應環境，懂得順勢而為，表面看起來平靜，但內心其實常有波瀾。","若想讓屬水的人心服口服，通常需要經過一番完整的計劃和說服。平時要多留意膀胱、腎臟和雙腳的健康。"],note:"身強的人適合往財官食傷方向發展；身弱的人需要金與印星來扶助自己。"}
+};
+
+const DZ_CHAR={
+子:{sx:"鼠",nx:"聰明靈動但多慮，外柔內剛",traits:["很懂得保護自己，反應聰明靈活。","個性帶有雙重性，不容易被人摸透，做事常常猶豫不決，選擇了又後悔，不選擇也後悔。","性格善變，習慣隱藏實力，常常心裡想的和表面說的不一樣。","個性容易走極端，遇到難以解決的事情時，容易出現逃避的鴕鳥心態。","平時要多留意膽部的健康。"]},
+丑:{sx:"牛",nx:"踏實勤勞，有韌性但過於固執",traits:["為人老實，但脾氣其實不小。","做事肯吃苦耐勞，腳踏實地，能夠忍辱負重。","遇到事情習慣打破砂鍋問到底，個性主觀，一旦認同某件事就會非常認真投入。","很愛碎念，也很喜歡追查別人的行蹤，常常追根究柢、翻舊帳，但對人對事都很任勞任怨。","平時要多留意肝臟的健康。"]},
+寅:{sx:"虎",nx:"開創力強，衝勁十足但難以持久",traits:["性格仁慈寬厚。","天生具有領導氣質，注重外表形象，帶有一種權威感。","象徵著行動力和開創力，不過持續力相對較弱。","性格好動坐不住，膽子越大反而越不怕，爆發力十足。","喜歡當老大，做事會比較計較得失。","沒事可做的時候，容易顯得無精打采，像是生病一樣。","喜歡獨來獨往，不喜歡被人管束，要特別留意交通安全。","平時要多留意肺部的健康。"]},
+卯:{sx:"兔",nx:"溫和細膩，重感情，直覺靈敏",traits:["性格仁慈寬厚。","桃花運不錯，但膽子偏小，行動容易一時衝動又善變，喜歡乾淨整潔的環境。","眼光很好，但只要第一印象不佳就不會理會對方，因此常給人眼光很高的感覺。","做事習慣一鼓作氣完成才肯休息，有始有終。","第六感特別強。平時要多留意大腸的健康，也可以隨身攜帶護身符或小羅盤輔助安定。"]},
+辰:{sx:"龍",nx:"主觀強烈，創意豐富，自我意識高",traits:["眼光很高，喜歡當老大。","思緒變化很快，聰明但帶點自負，點子雖多卻不太切合實際。","主觀意識強烈，個性固執，不喜歡被人管束。","不太相信命運的安排，習慣自己找理由解釋，個性帶有一點神秘感，讓人難以看透。","在五術方面常常很有天份，但也比較鐵齒，喜歡聽好話，命中容易有自刑的現象。","平時要多留意腸胃的健康。"]},
+巳:{sx:"蛇",nx:"思維敏銳，觀察力強，疑心較重",traits:["熱情好客，但對不熟的人會比較認生，喜歡與人辯論。","警覺性很高，行動敏捷，做事能夠持久堅持。","觀察力敏銳，但疑心也比較重。","性格冷靜甚至帶點冷酷，好動且不服輸。","喜歡聊天交流，分析能力強，足智多謀。","很適合從事業務推廣相關工作，但要特別留意交通安全。平時要多留意脾臟的健康。"]},
+午:{sx:"馬",nx:"熱情奔放，情緒起伏大，易受影響",traits:["性格好動奔放，不喜歡受到拘束。","好勝心很強，受不了刺激，一旦被激就會有所反應。","耳根子比較軟，容易被人煽動或影響。","喜歡被人稱讚拍馬屁，好勝心強，禁不起激將法。","一旦下定決心，就能像日行千里般快速行動，但翻臉也很快，容易被人設計上當，命中容易有自刑的現象。","平時要多留意心臟的健康。"]},
+未:{sx:"羊",nx:"溫柔細心，依賴性強，感情豐富",traits:["很在意外在形象，喜歡往外跑。","個性偏膽小，習慣依賴別人。","內心很孝順，但不太擅長用言語表達。","遇到事情會打破砂鍋問到底，喜歡追根究柢。","主觀意識強，個性固執，對感情專一忠貞，但也容易翻舊帳。","平時要多留意小腸的健康。"]},
+申:{sx:"猴",nx:"機智靈活，反應快，但容易衝動",traits:["性子急，脾氣不太好。","缺乏耐性等待，想到什麼就會立刻去做。","心機不算重，個性善變，模仿能力強，喜歡走捷徑。","說話比較直接銳利，常常不自覺就傷了別人的心。","做事手腳俐落，學習能力強，個性靜不下來。","平時要多留意膀胱的健康。"]},
+酉:{sx:"雞",nx:"熱心助人，執行力強，直率有時過頭",traits:["很講義氣，熱心過了頭，看到別人有困難常會義不容辭地幫忙。","說話比較直接，常常不自覺就傷了別人的心。","人緣很好，做事勤奮，很有愛心。","做事很投入，好商量，但有時思考不夠周全，也比較藏不住秘密。","判斷力強，神經比較敏感，酒量通常兩極化，很會喝或完全不喝。","平時要多留意腎臟的健康。"]},
+戌:{sx:"狗",nx:"忠誠可靠，固執護主，但難以溝通",traits:["主觀意識強，個性固執，自尊心也很高。","非常忠心，一旦被認同就會願意全力相挺，但若被自己認同的人，也不容許別人去批評，對命運的安排比較鐵齒。","腦袋裡常有些鬼點子，不太容易溝通，但只要適時稱讚，就會變得好商量。","可以是生死之交的朋友，個性頑固但很重感情。","平時要多留意心包膜的健康。"]},
+亥:{sx:"豬",nx:"智慧深藏，看似軟弱但意志堅定",traits:["天生聰明，很有口福，喜歡享受生活。","明理且智慧高，但開創力較低，要先了解內心想法才能順利溝通，遇事常會追根究柢。","對餐廳和飲食很講究，外表看似溫和老實，但內心其實深藏不露，個性偏內向。","容易鑽牛角尖，觀念一旦形成就很難轉變，相當重視原則。","心裡的話大多藏在心底，口才其實不錯，懂得善用身邊的人，是十二地支中自刑現象最明顯的一個。","平時要多留意三焦系統的健康，包含上焦的心肺、中焦的脾胃肝膽，以及下焦的腎臟與腸道。"]}
+};
+
+// ══════════════════════════════════════════
+// 開運服務建議系統
+// 依命盤/十神/流年徵兆，判斷適合的代辦服務
+// ══════════════════════════════════════════
+const SERVICE_INFO={
+  補財庫:{
+    icon:'💰', color:'#B8923A',
+    name:'補財庫',
+    short:'錢留不住、財來財去時，補財庫能幫助穩定財運根基。'
+  },
+  納財精油:{
+    icon:'🌿', color:'#7A9A5A',
+    name:'納財精油',
+    short:'隨身或居家使用，輔助招財氣場，幫助財運流通不阻塞。'
+  },
+  迴向祈福:{
+    icon:'🙏', color:'#8A7AA8',
+    name:'迴向祈福',
+    short:'運勢卡關、諸事不順時，迴向功德有助消解業力阻礙。'
+  },
+  除小人轉運:{
+    icon:'🛡️', color:'#A85838',
+    name:'除小人轉運祈福',
+    short:'小人是非纏身、被陷害背刺時，轉運祈福能化解暗中阻礙。'
+  },
+  羅盤:{
+    icon:'🧭', color:'#3A6878',
+    name:'隨身羅盤',
+    short:'驛馬星重、奔波勞碌或車關纏身時，隨身羅盤有助於趨吉避凶、安定方位。'
+  },
+  芙蓉除穢:{
+    icon:'🌸', color:'#A85878',
+    name:'芙蓉沐浴乳／芙蓉精油（除穢化煞）',
+    short:'犯太歲、刑沖多或氣場混亂時，用芙蓉系列沐浴淨身，有助於除穢化煞、清淨身心。'
+  }
+};
+
+// 判斷邏輯：輸入完整命盤res、十神統計、流年/犯太歲狀態，回傳命中的服務建議陣列
+// 每筆 {key, reason}：reason是「為什�麼適合」的具體說明文字
+function detectServices(res, mainSS, ssCount, taiSuiNow){
+  var hits=[]; // {key, reason}
+  var ri=res.ri, sq=res.sq;
+
+  // ── 補財庫 / 納財精油：比劫過重、財星被合、無財星、財庫被衝 ──
+  var biJie=(ssCount['比肩']||0)+(ssCount['劫財']||0);
+  var hasCaiXing=(ssCount['正財']||0)+(ssCount['偏財']||0)>0;
+  var kuChongHit=(res.dzEvents||[]).some(function(ev){return ev.type==='衝' && ['辰','戌','丑','未'].some(function(z){return ev.mem.includes(z);});});
+  if(biJie>=2){
+    hits.push({key:'補財庫',reason:'你的命盤中比肩、劫財的力量偏重（合計'+biJie+'個），這代表身邊的人或突發狀況容易讓財富流失，錢進得來也容易留不住，補財庫能幫助穩固財富根基，減少不必要的破財。'});
+    hits.push({key:'納財精油',reason:'比劫過重時財氣容易被分散，搭配納財精油可以輔助招財氣場，讓財運的流通更順暢、不被身邊人事消耗。'});
+  }
+  if(!hasCaiXing){
+    hits.push({key:'補財庫',reason:'你的命盤天干地支中沒有出現正財或偏財，代表財星力量先天較弱，賺錢機會相對需要更多努力才能掌握，補財庫可以幫助補強這個先天較弱的財務根基。'});
+  }
+  if(kuChongHit){
+    hits.push({key:'補財庫',reason:'你的命盤中財庫（辰戌丑未）出現相衝的狀況，代表庫位被打開、難以聚財，即使賺得到錢也容易因為突發狀況而花掉，補財庫能幫助修補這個漏財的破口。'});
+  }
+
+  // ── 迴向祈福：身弱逢七殺/傷官年、凶象多 ──
+  var xiongCount=(res.xiong||[]).length;
+  if(xiongCount>=2){
+    hits.push({key:'迴向祈福',reason:'你的命盤中出現'+xiongCount+'種凶象組合，代表這幾年運勢容易卡關、諸事不順的機率較高，迴向祈福能透過累積的功德力量，幫助化解這些卡關的阻礙，讓運勢走得更順一些。'});
+  }
+  if(sq==='身弱' && (mainSS==='七殺'||mainSS==='傷官')){
+    hits.push({key:'迴向祈福',reason:'你的命格偏身弱，又以'+mainSS+'的力量最明顯，代表本身能量需要外力扶持，遇到壓力和挑戰時容易感到吃不消，迴向祈福有助於累積正向力量，幫助你撐過比較辛苦的階段。'});
+  }
+
+  // ── 除小人轉運：偏印奪食、流年逢害/刑 ──
+  var pianYinDuoShi=(ssCount['偏印']||0)>=2 && (ssCount['食神']||0)>0;
+  if(pianYinDuoShi){
+    hits.push({key:'除小人轉運',reason:'你的命盤中偏印的力量偏重，又同時帶有食神，命理上稱為「梟印奪食」，代表容易遇到表面上看起來幫你、實際上卻在背後拖你後腿的人，除小人轉運祈福能幫助化解這種暗中陷害的狀況。'});
+  }
+  var haiCount=(res.dzEvents||[]).filter(function(ev){return ev.type==='害';}).length;
+  if(haiCount>=1){
+    hits.push({key:'除小人轉運',reason:'你的命盤中出現地支相害的組合，代表人際關係上容易遇到溝通不順、貌合神離甚至背後使壞的狀況，除小人轉運能幫助化解這類隱性的人際阻礙。'});
+  }
+
+  // ── 隨身羅盤：驛馬重、車關 ──
+  var maCount=(res.maL||0);
+  if(maCount>=2){
+    hits.push({key:'羅盤',reason:'你的命盤中驛馬星有'+maCount+'個，代表生活中經常需要奔波、移動機會多，逢衝的年份要特別注意交通安全，隨身攜帶羅盤有助於趨吉避凶、安定行車方位上的氣場。'});
+  }
+  var yiMaChongHit=(res.dzEvents||[]).some(function(ev){return ev.type==='衝' && (['寅','申'].every(function(z){return ev.mem.includes(z)||res.pillars.some(function(p){return p.zhi===z;});}) || ['巳','亥'].every(function(z){return ev.mem.includes(z)||res.pillars.some(function(p){return p.zhi===z;});}));});
+
+  // ── 芙蓉除穢化煞：犯太歲、刑沖多 ──
+  var chongCount=(res.dzEvents||[]).filter(function(ev){return ev.type==='衝';}).length;
+  var xingCount=(res.dzEvents||[]).filter(function(ev){return ev.type==='自刑';}).length;
+  if(taiSuiNow){
+    hits.push({key:'芙蓉除穢',reason:'今年你犯'+taiSuiNow.name+'，氣場容易受到外界干擾、變得比較混亂，用芙蓉沐浴乳或芙蓉精油淨身，有助於除穢化煞、安定身心，讓今年的運勢走得更平穩。'});
+  }
+  if(chongCount+xingCount>=2){
+    hits.push({key:'芙蓉除穢',reason:'你的命盤中衝、刑的組合偏多（合計'+(chongCount+xingCount)+'處），代表氣場容易混亂、情緒起伏較大，芙蓉系列除穢化煞的使用，有助於清淨身心、穩定氣場。'});
+  }
+
+  // 去重（同一服務若命中多次，合併reason，只保留前2個理由避免太長）
+  var merged={};
+  hits.forEach(function(h){
+    if(!merged[h.key]) merged[h.key]={key:h.key, reasons:[]};
+    if(merged[h.key].reasons.length<2) merged[h.key].reasons.push(h.reason);
+  });
+  return Object.values(merged);
+}
+
+// ── 日主天干對應天職方向 ──
+const TG_CAREER={
+  甲:{tags:["教育","行政管理","園藝農林","木材家具","企劃策略","公務體系"],type:"開創領導型",desc:"你做事踏實、有領導力，喜歡從零開始建立制度，適合需要長期耕耘、能慢慢看見成果的工作。在有明確規則和上升空間的體系裡，你的紮根能力會特別被看見。"},
+  乙:{tags:["藝術設計","美容造型","花藝園藝","顧問規劃","出版編輯","公關行銷"],type:"細膩規劃型",desc:"你個性柔軟但有韌性，擅長在細節裡找到最適合的解法，適合需要美感、規劃力或幕後操盤的工作，不喜歡太強硬對抗的職場文化。"},
+  丙:{tags:["業務銷售","演藝表演","活動策展","餐飲服務","公眾演說","廣告創意"],type:"熱情表現型",desc:"你天生有舞台魅力、熱情直接，適合站在第一線跟人互動、需要快速建立關係的工作，越有人群、越有曝光機會的環境越能發揮你的能量。"},
+  丁:{tags:["諮商心理","醫療護理","客戶服務","靈性療癒","文字創作","研究分析"],type:"細緻照顧型",desc:"你心思細膩、第六感強，很懂得照顧人和察言觀色，適合需要耐心傾聽、給予溫暖的工作，但要留意不要把自己耗在過度體貼別人上。"},
+  戊:{tags:["不動產","營建工程","倉儲物流","餐飲食品","公務體系","土地開發"],type:"穩健踏實型",desc:"你個性厚實穩重、講信用，適合需要長期信任累積、按部就班的工作，不喜歡投機冒險的環境，越能讓你發揮耐心耕耘特質的職場越適合你。"},
+  己:{tags:["教育","護理","社工","餐飲食品","幼兒教育","行政管理","財務規劃","秘書"],type:"服務口碑型",desc:"你靠口碑積累、靠細心照顧建立信任，適合需要細心、耐心、照顧他人的職場。命盤正財強的話，更適合穩定進財、按部就班積累的理財型工作。"},
+  庚:{tags:["軍警消防","運動健身","機械工程","金融交易","外科醫療","物流運輸"],type:"果決行動型",desc:"你個性剛毅果決、講義氣，適合需要明快決策、雷厲風行的工作，越能讓你直來直往發揮魄力的環境，越能展現你的領導氣勢。"},
+  辛:{tags:["珠寶精品","金融理財","精密技術","美容醫美","法律訴訟","品質管控"],type:"精緻專業型",desc:"你重細節、要求精準，適合需要高度專業度和精緻品味的工作，越能展現你細膩眼光和專業堅持的領域，越能讓你發光發熱。"},
+  壬:{tags:["國際貿易","物流航運","媒體傳播","旅遊觀光","行銷企劃","水利相關"],type:"靈活應變型",desc:"你聰明機警、善於把握時機，適合需要靈活應變、廣結人脈的工作，越能讓你發揮機智和商業眼光的流動性環境，越適合你發展。"},
+  癸:{tags:["研究分析","策略顧問","哲學宗教","資訊科技","幕僚企劃","財務投資"],type:"深謀遠慮型",desc:"你足智多謀、善於算計布局，適合需要深度思考、謀定而後動的工作，比起站在第一線，你更適合在幕後做關鍵的策略判斷。"}
+};
+
+// ── 十神對應工作方式建議 ──
+const SS_CAREER={
+  比肩:"你適合跟一群人並肩作戰的工作環境，團隊合作會讓你發揮得更好，但也要留意過度依賴朋友介紹的工作機會，自己評估清楚再決定。",
+  劫財:"你的競爭意識強、行動力夠，適合需要拼業績、講求結果的工作，但合夥或跟人共享資源的工作型態要特別謹慎，容易因此產生財務糾紛。",
+  食神:"你的才華容易被看見，適合能展現創意和生活品味的工作，研發、創作、餐飲美食類的領域特別適合你，工作起來也比較快樂愉悅。",
+  傷官:"你腦筋靈活、敢於突破，適合需要創新和獨特觀點的工作，但要留意團隊溝通方式，太直接的表達容易讓人覺得難相處。",
+  正財:"你踏實、會理財，適合穩定進財、按部就班累積成果的工作型態，不喜歡大起大落的職場文化，越能讓你慢慢累積信任的環境越好。",
+  偏財:"你對賺錢機會反應快，適合節奏快、能靈活把握商機的工作，業務、投資、商業開發類的領域很適合你，但要留意收入不穩定時的財務規劃。",
+  正官:"你重視規矩和名聲，適合體制內、有明確晉升管道的工作環境，按部就班往上爬對你來說比自己創業更有安全感也更容易成功。",
+  七殺:"你壓力承受度高、敢衝敢拼，適合需要決斷力和魄力的工作，越有挑戰性、越需要扛責任的職位，越能讓你發揮領導潛力。",
+  正印:"你重學習、重貴人緣，適合需要不斷進修、跟隨師長學習的工作領域，教育、研究、醫療類的工作會讓你感到踏實又有成長感。",
+  偏印:"你直覺敏銳、想法獨特，適合需要專業鑽研或創新思維的工作，比起按表操課，你更適合能發揮獨到見解的研究或企劃類職位。"
+};
+
+const SS_PLAIN={
+  比肩:'重朋友重情義，但容易因為朋友而破財，建議錢借出去要有心理準備拿不回來',
+  劫財:'人緣好但錢財留不住，異性緣也旺，財務上要特別謹慎，不適合跟人合夥做生意',
+  食神:'有才華也很會享受生活，吃穿不缺，性格溫和，做研發創作類的工作很適合',
+  傷官:'腦筋靈活反應快，但說話容易得罪人，適合創意工作，要小心言語上的衝突',
+  正財:'踏實會理財，賺錢機會多，是個顧家負責任的人，但對金錢的恆心稍嫌不足',
+  偏財:'對錢財看得開，賺錢速度快但花得也快，人脈廣闊，適合做生意或投資',
+  正官:'重視名聲地位，做事保守講規矩，容易得到肯定，是個適合走仕途或穩定職場的人',
+  七殺:'個性強勢有領導力，能扛壓力也敢衝，適合當主管或創業者，但壓力承受度需要注意',
+  正印:'重感情有同情心，跟長輩貴人緣份深，適合做需要耐心和學習的工作',
+  偏印:'直覺敏銳想法獨特，常有自己一套見解，適合研究、企劃或需要創新思維的領域',
+};
+const SS_DETAIL={
+比肩:{rep:"兄弟、朋友、獨立自主、自尊",
+traits:"個性樂觀進取，懂得守本分，很重視朋友情義，但也比較主觀好勝，不容易低頭認輸，有時容易跟人起爭執。賺到的錢常常會跟身邊的人分享，社交能力不錯，喜歡呼朋引伴。",
+qiang:"身邊容易出現跟你競爭的人，包括感情上也容易有第三者介入，這個時期理財要特別謹慎，不適合跟人合資或互助會。",
+ruo:"做決定容易猶豫不決，缺乏自信，但運勢好轉時身邊會出現幫你一把的人，建議多培養自己的決斷力。",
+note:"不論身強身弱，這個十神都建議想辦法化解掉，尤其千萬別跟會（容易被朋友拖累破財）。年柱出現代表小時候比較獨立，但也容易早早經歷失戀，家境壓力較大；月柱代表手足朋友的緣分，手頭寬裕時朋友多，沒錢時往來就變少；時柱出現代表晚年事業上跟同事的競爭壓力較大，也要留意晚輩可能讓人操心。"},
+劫財:{rep:"姊妹、競爭、野心、表現慾",
+traits:"表面看起來很樂觀，但內心其實常常想不開。異性朋友比較多，建議晚一點結婚比較穩。為人好客、能力不錯，但比較容易丟東西、做事有頭沒尾。口才好、有表現慾，也比較容易被人說動，不太擅長理財，不建議跟人合夥做生意。",
+qiang:"財務狀況容易大起大落，異性朋友多，感情路上容易有波折，建議晚婚比較穩定。如果同時出現比肩跟劫財，代表破財風險特別高，錢不要借人、不要跟會、不要合夥，否則容易被人拖累。",
+ruo:"要特別注意朋友來借錢的狀況，財務上能共享要謹慎一點。男生帶這個星，容易在交往初期就遇到競爭者，對另一半比較沒有安全感。",
+note:"不論身強身弱都建議化解掉，且適合晚一點結婚。就算命盤裡有財庫，遇到比肩或劫財也等於沒有庫存，運勢走到這顆星的年份，理財要更克制。出現在任何一柱，都代表感情路上容易出現追求者跟你的另一半競爭，一旦失戀往往會印象深刻、難以忘記。"},
+食神:{rep:"才華（智慧）、食祿（祿壽）、較傳統",
+traits:"比較容易接受並傳承傳統技藝，能把自己的才華發展出來，適合往研發類的工作走。個性溫文儒雅、樂觀進取，比較能沉得住氣，外型通常不錯，個性直接、斯文，也很有口福，是命理上說的『天廚格』，通常很會做菜，到哪都不怕沒東西吃。女性命盤中，這個星跟傷官一起代表子女的緣分。",
+qiang:"身強的人，這份才華是真材實料，比較能真正靠才華賺到錢，適合好好發展個人特色。",
+ruo:"身弱的人建議要想辦法化解，因為這時候的才華比較難轉化成實際收入，身體狀況也容易偏弱，常常會什麼都想學，卻很難真正精通一項。",
+note:"食神可以制衡七殺，代表能壓制過度強勢的一面，但如果食神被合住，才華就難以發揮，決策容易出錯，嚴重時甚至會影響到子女的狀況，所以這個位置需要多留意。"},
+傷官:{rep:"子女、才華（突破）、批評家",
+traits:"個性獨特善變，講話容易帶點諷刺意味，也比較孤僻挑剔，喜歡標新立異、想法天馬行空。說話有時會讓人覺得在刁難，個性追求自由、有點任性，也容易偏向悲觀，是個完美主義者。女生通常長得漂亮，男生通常長得帥，但考運比較不穩，脾氣也容易暴躁。如果食神跟傷官同時出現，代表才華發揮起來忽高忽低，重視邏輯、表現慾強，但常常學很多卻不夠專精，性子急、喜歡自由，也容易因為小事被感動。",
+qiang:"思維敏銳、敢於創新突破，對社會現象常有自己的看法，是標準的批評型人格，這個特質在身強的人身上會更明顯，建議講話時多留意措辭。",
+ruo:"才華比較難真正發揮出來，而且常常是幫你最多的人，最後反而最容易在背後傷到你，要特別留意人際關係上的拿捏。",
+note:"不論身強身弱都建議想辦法化解。女生有這個星最好晚婚，因為太愛另一半反而容易管太多、唸太多，容易造成婚姻變化。男生則容易顯得有點古怪直白。如果食神和傷官同時出現，代表桃李滿天下、很適合教學。運勢走到傷官的年份做事容易不順、考運也較差，如果同時遇到正官，命理上稱『傷官見官』，容易招惹是非麻煩，這幾年千萬不要幫人作保。"},
+正財:{rep:"錢財、妻子（男命）、家庭責任",
+traits:"個性克勤克儉，為人正派、有家庭責任感，物質慾望不高，喜歡住在熱鬧的地方，性格樂觀、笑容多。賺錢機會相對較多，也很好溝通，不過持續力稍嫌不足。男生命盤裡有這個星，通常會疼愛妻子；如果沒有，可能比較不容易遇到合適的對象，也比較不懂得珍惜另一半。",
+qiang:"通常出社會很快就能賺到錢，但花錢也很快，不太把錢財看在眼裡，身強的人比較容易守住財富、有所收穫。",
+ruo:"異性緣不錯，但賺錢比較辛苦，財富容易來來去去不容易累積，年紀越大越容易留不住錢。",
+note:"如果天干有財星但地支沒有財庫，容易一生財來財去難以積累。財星跟印星同時出現時，財容易損耗到印（代表的學業、貴人運），遇到比肩劫財的年份要特別注意破財或健康問題。男生命盤裡這代表妻子，跟母親的關係可能不太融洽，容易有婆媳問題。如果流年運勢合住了正財，可能代表妻子有可能離開或感情變得疏離，對另一半安全感不足。"},
+偏財:{rep:"父親、妾（偏財）、疏財重義",
+traits:"對錢財看得比較開，很會理財，性格慷慨大方、重情重義。賺錢的速度比一般人快，大小機會都不放過，但相對地花錢也快，財富比較不穩定，也較少置產不動產。男生命盤中代表容易有婚外情的傾向，且不太怕被另一半發現，比較重視外面的對象而非正式伴侶，尤其運勢走到偏財年更要留意。",
+qiang:"身強的人比較能守住財富，適合做生意或投資，人際關係廣闊。女生身強帶這個星，會顯得特別有魅力、風情萬種。男生若同時帶七殺，異性緣會特別旺，也比較容易有多段感情。",
+ruo:"身弱的人遇到財星反而容易破財，這個時期偏向是壓力和挑戰，要特別謹慎理財。",
+note:"如果偏財重疊出現，命理上說容易『只愛妾不愛妻』，但也代表很會規劃財務。如果偏財被合住，開銷會變大，做生意容易虧損，遇到特定不利組合時財富流失會更明顯。運勢走到偏財年，父親的身體狀況可能需要多留意。命盤中沒有財星的人，通常比較不懂得疼愛伴侶；財星過旺的人離婚機率也會偏高，需要多用心經營感情。"},
+正官:{rep:"名聲地位、官職、丈夫（女命）",
+traits:"個性光明正大、為人保守，比較不主動爭取機會，但公眾形象不錯、有正義感，也容易有優越感跟固執的一面，個性偏大男人主義。通常面相方正，很有舞台魅力，但做決定容易猶豫，考運不錯（除非遇到傷官的年份）。女生命盤帶這個星，通常異性緣穩定，感情比較專一固定。",
+qiang:"一生比較容易擁有名聲地位，事業運順暢，身強的人更容易在職場上發光發熱。",
+ruo:"身弱的人容易遇到較多是非和壓力，身體也容易偏弱，命理上講『身弱不適合扛太多責任』，這個階段建議多休養。",
+note:"正官最怕遇到傷官，這幾年容易發生意外或失去既有的地位名聲。女生流年走到合住正官的年份，要多注意先生的身體健康。流年遇到傷官，考運會明顯變差，工作上也容易有職位變動的風險。如果命盤本身就是傷官見官的組合，或正官被流年合住，運勢容易出現大起大落。女生命盤同時有正官跟七殺，感情路上比較容易有困擾；正官出現得早的女生，通常結婚也會比較早。"},
+七殺:{rep:"壓力挑戰、領導力、凶悍氣躁",
+traits:"個性偏強勢、性急，但領導能力很強，能軟能硬、做事果斷，遇到機會敢愛敢恨、敢衝敢拼。眉毛通常比較粗，表情看起來嚴肅，對工作非常積極投入，適應能力也很好。如果同時有食神來制衡七殺，這份強勢反而會被壓抑，難以真正展現出來。",
+qiang:"身強的人能把七殺的強勢轉化成領導力，成為很有魄力的主管或老闆。女生身強帶這個星，在感情關係中往往掌握主導權。如果命盤同時有正官和七殺，異性緣會特別好。",
+ruo:"身弱的人這幾年容易遇到比較多的挫折、意外或小人，是非也多，要懂得用印星（代表貴人、學習）的力量來化解這份壓力。",
+note:"七殺太多容易讓人顯得萎靡不振、缺乏精神。如果同時搭配食神來制衡，這份氣勢反而會被壓住、難以真正展現權威。命盤中七殺較重或較多的人，要特別留意意外或官司糾紛的風險，多加謹慎。女生也建議多留意感情上的誘惑，避免捲入不必要的感情困擾。"},
+正印:{rep:"母親、貴人、學問",
+traits:"代表母親和貴人運，個性富有同情心、待人寬厚，但也比較主觀、容易悲觀，反應稍慢，不太喜歡聽別人的意見。對錢財不是很看重，性格固執，喜歡安靜的居住環境，自尊心強、有點自命清高，但同時也很有同理心。",
+qiang:"身強的人如果印星太旺，反而容易招惹小人或被人利用，這種情況建議想辦法化解，否則容易陷入麻煩的人際關係。",
+ruo:"身弱的人遇到正印是真正的貴人運，會有長輩或師長願意拉你一把，很適合往進修、學習的方向發展。跟母親的緣分很深，雖然溝通上可能不太順暢，但身邊的長輩朋友都會願意幫忙。",
+note:"如果正印被流年合住，要多留意母親的身體健康。男生命盤如果財星跟印星同時出現，容易有婆媳問題。運勢走到正印年，母親的身體狀況可能要特別注意。正印跟偏印不太一樣，正印比較好溝通、是正派的貴人，偏印則有時反而像是隱藏的小人。身弱的人如果正印或偏印被合住，出狀況的機率會提高，母親無論身體或情緒上的變化都要多加留意。"},
+偏印:{rep:"貴人（需分辨）、直覺、梟神",
+traits:"代表貴人運，但身強的人通常建議想辦法化解掉。反應靈敏、有自己獨特的一套想法，性格比較警覺多疑，最相信的是自己，不太容易接受別人的意見，主觀意識很強。個性容易走極端，但同時也很沉穩、帶點神秘感，喜歡推陳出新、挑戰舊有觀念。口才辯論能力很強，企劃跟設計能力也很出色，是天生的領導型人格，在場時往往很有主導權，思緒廣闊、很會察言觀色，但有時也容易直接點出別人的缺點。性格樂觀、不怕挫折，經手的金錢通常不少。",
+qiang:"身強的人如果偏印太旺，命理上稱為『梟神奪食』，容易壓制掉原本的才華（食神），建議想辦法化解，否則容易遭人陷害。身強帶這個星的人喜歡往外跑，容易把錢花在投資或感情上。偏印太多的人個性會比較好勝逞強、喜歡辯論，身體狀況也可能因此受影響。",
+ruo:"身弱的人偏印反而是真正的貴人運，直覺敏銳，很適合往研究、靈性成長或專業技能方面發展。如果同時搭配七殺，身弱的人反而會展現出某種權威感。",
+note:"如果偏印壓制過食神（梟印奪食），容易一生較常遭遇陷害或意外波折，這個組合需要多加留意，傳統上會用特定方式化解。運勢走到偏印年，想法容易偏消極，也容易想買房地產。如果印星和偏印同時出現，個性容易主觀又反覆無常，反而不容易成功。身強的人通常不喜歡印星太旺，否則容易反過來變成阻力。"}
+};
 const JQ_DB={1980:{立春:[2,5,10,10],驚蟄:[3,5,4,2],清明:[4,4,8,46],立夏:[5,5,20,56],芒種:[6,6,13,7],小暑:[7,7,23,21],立秋:[8,7,1,9],白露:[9,7,5,5],寒露:[10,7,20,41],立冬:[11,7,22,58],大雪:[12,7,15,55],小寒:[1,6,3,17]},1981:{立春:[2,4,15,56],驚蟄:[3,5,9,52],清明:[4,4,14,38],立夏:[5,5,2,52],芒種:[6,5,19,5],小暑:[7,7,5,23],立秋:[8,7,7,14],白露:[9,7,11,10],寒露:[10,8,2,46],立冬:[11,7,5,6],大雪:[12,6,21,57],小寒:[1,5,9,15]},1982:{立春:[2,4,21,46],驚蟄:[3,5,15,44],清明:[4,4,20,31],立夏:[5,5,8,44],芒種:[6,5,1,0],小暑:[7,7,11,15],立秋:[8,7,13,4],白露:[9,7,17,0],寒露:[10,8,8,35],立冬:[11,7,10,54],大雪:[12,7,3,43],小寒:[1,5,14,57]},1983:{立春:[2,4,3,36],驚蟄:[3,5,21,38],清明:[4,5,2,22],立夏:[5,5,14,34],芒種:[6,5,6,47],小暑:[7,7,17,4],立秋:[8,7,18,53],白露:[9,7,22,47],寒露:[10,8,14,22],立冬:[11,7,16,39],大雪:[12,7,9,27],小寒:[1,6,20,43]},1984:{立春:[2,4,9,20],驚蟄:[3,5,3,12],清明:[4,4,8,1],立夏:[5,5,20,15],芒種:[6,5,12,30],小暑:[7,6,22,49],立秋:[8,7,0,37],白露:[9,7,4,34],寒露:[10,7,20,9],立冬:[11,6,22,25],大雪:[12,6,15,11],小寒:[1,6,2,28]},1985:{立春:[2,4,15,12],驚蟄:[3,5,9,6],清明:[4,4,13,58],立夏:[5,5,2,16],芒種:[6,5,18,34],小暑:[7,7,4,55],立秋:[8,7,6,44],白露:[9,7,10,39],寒露:[10,8,2,15],立冬:[11,7,4,29],大雪:[12,6,21,15],小寒:[1,6,8,31]},1986:{立春:[2,4,21,8],驚蟄:[3,5,15,3],清明:[4,4,19,56],立夏:[5,5,8,11],芒種:[6,5,0,26],小暑:[7,7,10,47],立秋:[8,7,12,35],白露:[9,7,16,32],寒露:[10,8,8,5],立冬:[11,7,10,19],大雪:[12,7,3,2],小寒:[1,5,14,12]},1987:{立春:[2,4,3,2],驚蟄:[3,5,20,58],清明:[4,5,1,51],立夏:[5,5,14,9],芒種:[6,5,6,23],小暑:[7,7,16,47],立秋:[8,7,18,37],白露:[9,7,22,35],寒露:[10,8,14,10],立冬:[11,7,16,26],大雪:[12,7,9,13],小寒:[1,6,20,26]},1988:{立春:[2,4,8,44],驚蟄:[3,5,2,37],清明:[4,4,7,25],立夏:[5,4,19,41],芒種:[6,5,11,57],小暑:[7,6,22,19],立秋:[8,7,0,9],白露:[9,7,4,8],寒露:[10,7,19,47],立冬:[11,6,22,5],大雪:[12,6,14,56],小寒:[1,6,2,9]},1989:{立春:[2,4,14,27],驚蟄:[3,5,8,28],清明:[4,4,13,22],立夏:[5,5,1,42],芒種:[6,5,17,58],小暑:[7,7,4,20],立秋:[8,7,6,9],白露:[9,7,10,9],寒露:[10,8,1,47],立冬:[11,7,4,4],大雪:[12,6,20,48],小寒:[1,6,7,59]},1990:{立春:[2,4,20,15],驚蟄:[3,5,14,14],清明:[4,4,19,4],立夏:[5,5,7,17],芒種:[6,5,23,33],小暑:[7,7,9,54],立秋:[8,7,11,42],白露:[9,7,15,40],寒露:[10,8,7,14],立冬:[11,7,9,30],大雪:[12,7,2,17],小寒:[1,5,13,30]},1991:{立春:[2,4,17,8],驚蟄:[3,6,11,4],清明:[4,5,15,48],立夏:[5,6,3,55],芒種:[6,6,20,1],小暑:[7,7,6,13],立秋:[8,8,8,6],白露:[9,8,12,11],寒露:[10,9,4,0],立冬:[11,8,6,16],大雪:[12,7,23,9],小寒:[1,6,5,35]},1992:{立春:[2,4,23,48],驚蟄:[3,5,17,46],清明:[4,4,22,27],立夏:[5,5,10,37],芒種:[6,5,2,43],小暑:[7,7,12,55],立秋:[8,7,14,45],白露:[9,7,18,47],寒露:[10,8,9,36],立冬:[11,7,11,55],大雪:[12,7,4,43],小寒:[1,5,16,3]},1993:{立春:[2,4,5,38],驚蟄:[3,5,23,33],清明:[4,5,4,13],立夏:[5,5,16,22],芒種:[6,6,8,30],小暑:[7,7,18,44],立秋:[8,7,20,33],白露:[9,7,0,35],寒露:[10,8,16,23],立冬:[11,7,18,37],大雪:[12,7,11,26],小寒:[1,5,22,8]},1994:{立春:[2,4,11,31],驚蟄:[3,6,5,31],清明:[4,5,10,15],立夏:[5,5,22,23],芒種:[6,6,14,31],小暑:[7,7,0,44],立秋:[8,8,2,33],白露:[9,8,6,32],寒露:[10,8,22,6],立冬:[11,7,0,21],大雪:[12,7,17,6],小寒:[1,6,3,20]},1995:{立春:[2,4,17,13],驚蟄:[3,6,11,14],清明:[4,5,16,1],立夏:[5,6,4,13],芒種:[6,6,20,21],小暑:[7,7,6,35],立秋:[8,8,8,22],白露:[9,8,12,16],寒露:[10,8,3,48],立冬:[11,8,6,1],大雪:[12,7,22,49],小寒:[1,6,9,5]},1996:{立春:[2,4,22,8],驚蟄:[3,5,16,0],清明:[4,4,20,53],立夏:[5,5,9,6],芒種:[6,5,1,19],小暑:[7,6,11,35],立秋:[8,7,13,22],白露:[9,7,17,18],寒露:[10,8,8,52],立冬:[11,7,11,5],大雪:[12,6,23,50],小寒:[1,5,10,5]},1997:{立春:[2,4,4,4],驚蟄:[3,5,21,58],清明:[4,5,2,46],立夏:[5,5,14,56],芒種:[6,5,7,4],小暑:[7,6,17,16],立秋:[8,7,19,5],白露:[9,7,23,3],寒露:[10,8,14,39],立冬:[11,7,16,52],大雪:[12,7,9,38],小寒:[1,5,19,55]},1998:{立春:[2,4,9,57],驚蟄:[3,6,3,54],清明:[4,5,8,45],立夏:[5,5,20,57],芒種:[6,6,13,6],小暑:[7,7,23,18],立秋:[8,8,1,7],白露:[9,8,5,7],寒露:[10,8,20,44],立冬:[11,7,22,59],大雪:[12,7,15,44],小寒:[1,6,2,1]},1999:{立春:[2,4,15,57],驚蟄:[3,6,9,58],清明:[4,5,14,46],立夏:[5,6,2,52],芒種:[6,6,18,59],小暑:[7,7,5,9],立秋:[8,8,6,57],白露:[9,8,10,52],寒露:[10,8,2,24],立冬:[11,8,4,39],大雪:[12,7,21,22],小寒:[1,6,7,42]},2000:{立春:[2,4,21,32],驚蟄:[3,5,15,30],清明:[4,4,20,17],立夏:[5,5,8,24],芒種:[6,5,0,30],小暑:[7,6,10,42],立秋:[8,7,12,31],白露:[9,7,16,30],寒露:[10,8,8,9],立冬:[11,7,10,28],大雪:[12,7,3,18],小寒:[1,5,13,30]},2001:{立春:[2,4,3,28],驚蟄:[3,5,21,28],清明:[4,5,2,14],立夏:[5,5,14,24],芒種:[6,5,6,31],小暑:[7,7,16,41],立秋:[8,7,18,30],白露:[9,7,22,27],寒露:[10,8,14,2],立冬:[11,7,16,17],大雪:[12,7,9,3],小寒:[1,5,19,17]},2002:{立春:[2,4,9,23],驚蟄:[3,6,3,22],清明:[4,5,8,11],立夏:[5,5,20,21],芒種:[6,6,12,28],小暑:[7,7,22,38],立秋:[8,8,0,27],白露:[9,8,4,22],寒露:[10,8,19,55],立冬:[11,7,22,12],大雪:[12,7,14,56],小寒:[1,6,1,12]},2003:{立春:[2,4,15,5],驚蟄:[3,6,9,0],清明:[4,5,13,52],立夏:[5,6,2,2],芒種:[6,6,18,10],小暑:[7,7,4,19],立秋:[8,8,6,8],白露:[9,8,10,7],寒露:[10,8,1,42],立冬:[11,7,3,54],大雪:[12,7,20,39],小寒:[1,6,6,55]},2004:{立春:[2,4,20,56],驚蟄:[3,5,14,56],清明:[4,4,19,43],立夏:[5,5,7,48],芒種:[6,5,23,57],小暑:[7,6,10,8],立秋:[8,7,11,59],白露:[9,7,16,0],寒露:[10,8,7,38],立冬:[11,7,9,59],大雪:[12,7,2,50],小寒:[1,5,13,4]},2005:{立春:[2,4,2,43],驚蟄:[3,5,20,45],清明:[4,5,1,37],立夏:[5,5,13,52],芒種:[6,5,6,3],小暑:[7,7,16,16],立秋:[8,7,17,53],白露:[9,7,21,11],寒露:[10,8,13,41],立冬:[11,7,14,59],大雪:[12,7,7,31],小寒:[1,5,18,48]},2006:{立春:[2,4,8,26],驚蟄:[3,6,2,28],清明:[4,5,7,14],立夏:[5,5,19,26],芒種:[6,6,11,36],小暑:[7,7,21,47],立秋:[8,7,23,33],白露:[9,8,3,27],寒露:[10,8,19,0],立冬:[11,7,21,13],大雪:[12,7,14,0],小寒:[1,6,1,9]},2007:{立春:[2,4,14,18],驚蟄:[3,6,8,20],清明:[4,5,13,4],立夏:[5,6,1,9],芒種:[6,6,17,13],小暑:[7,7,3,23],立秋:[8,8,5,11],白露:[9,8,9,8],寒露:[10,9,0,44],立冬:[11,8,3,0],大雪:[12,7,19,49],小寒:[1,6,6,49]},2008:{立春:[2,4,20,0],驚蟄:[3,5,13,59],清明:[4,4,18,47],立夏:[5,5,7,2],芒種:[6,5,23,13],小暑:[7,6,9,27],立秋:[8,7,11,10],白露:[9,7,15,4],寒露:[10,8,6,42],立冬:[11,7,8,57],大雪:[12,7,1,45],小寒:[1,5,11,58]},2009:{立春:[2,4,1,50],驚蟄:[3,5,19,49],清明:[4,4,0,33],立夏:[5,5,12,51],芒種:[6,5,5,2],小暑:[7,7,15,15],立秋:[8,7,17,4],白露:[9,7,20,58],寒露:[10,8,12,34],立冬:[11,7,14,48],大雪:[12,7,7,33],小寒:[1,5,17,43]},2010:{立春:[2,4,7,47],驚蟄:[3,6,1,47],清明:[4,5,6,30],立夏:[5,5,18,43],芒種:[6,6,10,50],小暑:[7,7,21,2],立秋:[8,7,22,50],白露:[9,8,2,44],寒露:[10,8,18,22],立冬:[11,7,20,36],大雪:[12,7,13,21],小寒:[1,5,23,33]},2011:{立春:[2,4,13,32],驚蟄:[3,6,7,30],清明:[4,5,12,12],立夏:[5,5,0,22],芒種:[6,5,16,27],小暑:[7,7,2,41],立秋:[8,7,4,30],白露:[9,8,8,26],寒露:[10,8,0,6],立冬:[11,8,2,24],大雪:[12,7,19,11],小寒:[1,6,5,23]},2012:{立春:[2,4,19,22],驚蟄:[3,5,13,21],清明:[4,4,18,5],立夏:[5,5,6,20],芒種:[6,5,22,26],小暑:[7,7,8,40],立秋:[8,7,10,29],白露:[9,7,14,29],寒露:[10,8,6,12],立冬:[11,7,8,25],大雪:[12,7,1,12],小寒:[1,5,11,16]},2013:{立春:[2,4,1,13],驚蟄:[3,5,19,14],清明:[4,4,23,56],立夏:[5,5,12,6],芒種:[6,5,4,12],小暑:[7,7,14,24],立秋:[8,7,16,20],白露:[9,7,20,16],寒露:[10,8,11,59],立冬:[11,7,14,14],大雪:[12,7,7,0],小寒:[1,5,17,14]},2014:{立春:[2,4,6,59],驚蟄:[3,6,1,2],清明:[4,5,5,47],立夏:[5,5,17,59],芒種:[6,6,10,3],小暑:[7,7,20,15],立秋:[8,7,22,2],白露:[9,8,1,56],寒露:[10,8,17,38],立冬:[11,7,19,53],大雪:[12,7,12,38],小寒:[1,5,22,50]},2015:{立春:[2,4,12,58],驚蟄:[3,6,6,56],清明:[4,5,11,39],立夏:[5,5,23,53],芒種:[6,6,15,58],小暑:[7,7,2,12],立秋:[8,8,3,1],白露:[9,8,7,0],寒露:[10,8,22,43],立冬:[11,8,1,0],大雪:[12,7,17,48],小寒:[1,6,4,8]},2016:{立春:[2,4,18,46],驚蟄:[3,5,12,43],清明:[4,4,17,27],立夏:[5,5,5,41],芒種:[6,5,21,49],小暑:[7,7,8,3],立秋:[8,7,9,52],白露:[9,7,13,52],寒露:[10,8,5,33],立冬:[11,7,7,47],大雪:[12,7,0,41],小寒:[1,5,11,7]},2017:{立春:[2,3,23,34],驚蟄:[3,5,17,32],清明:[4,4,22,17],立夏:[5,5,10,31],芒種:[6,5,2,37],小暑:[7,6,12,51],立秋:[8,7,14,39],白露:[9,7,18,38],寒露:[10,8,10,22],立冬:[11,7,12,37],大雪:[12,7,5,32],小寒:[1,5,17,0]},2018:{立春:[2,4,5,28],驚蟄:[3,6,0,28],清明:[4,5,5,13],立夏:[5,5,17,25],芒種:[6,6,10,29],小暑:[7,7,20,41],立秋:[8,7,22,31],白露:[9,8,2,30],寒露:[10,8,18,15],立冬:[11,7,20,32],大雪:[12,7,13,26],小寒:[1,5,22,49]},2019:{立春:[2,4,11,14],驚蟄:[3,6,5,10],清明:[4,5,9,51],立夏:[5,5,22,3],芒種:[6,6,15,7],小暑:[7,7,1,21],立秋:[8,8,3,13],白露:[9,8,7,17],寒露:[10,8,22,6],立冬:[11,8,1,24],大雪:[12,7,18,18],小寒:[1,5,23,39]},2020:{立春:[2,4,17,3],驚蟄:[3,5,11,57],清明:[4,4,16,38],立夏:[5,5,4,51],芒種:[6,5,20,58],小暑:[7,7,7,14],立秋:[8,7,13,6],白露:[9,7,13,8],寒露:[10,8,4,55],立冬:[11,7,7,14],大雪:[12,7,0,9],小寒:[1,6,11,17]},2021:{立春:[2,3,22,59],驚蟄:[3,5,17,53],清明:[4,4,22,35],立夏:[5,5,10,47],芒種:[6,5,2,52],小暑:[7,7,13,5],立秋:[8,7,18,54],白露:[9,7,18,53],寒露:[10,8,10,39],立冬:[11,7,13,0],大雪:[12,7,5,57],小寒:[1,5,17,23]},2022:{立春:[2,4,4,51],驚蟄:[3,5,23,44],清明:[4,5,4,20],立夏:[5,5,16,26],芒種:[6,6,8,26],小暑:[7,7,18,38],立秋:[8,7,20,29],白露:[9,8,0,32],寒露:[10,8,16,22],立冬:[11,7,18,45],大雪:[12,7,11,46],小寒:[1,5,23,14]},2023:{立春:[2,4,10,43],驚蟄:[3,6,5,36],清明:[4,5,10,13],立夏:[5,5,22,19],芒種:[6,6,14,18],小暑:[7,7,0,31],立秋:[8,8,2,23],白露:[9,8,6,27],寒露:[10,8,22,15],立冬:[11,8,0,36],大雪:[12,7,17,33],小寒:[1,6,5,17]},2024:{立春:[2,4,16,27],驚蟄:[3,5,11,23],清明:[4,4,16,2],立夏:[5,5,4,10],芒種:[6,5,20,10],小暑:[7,6,6,20],立秋:[8,7,8,9],白露:[9,7,12,11],寒露:[10,8,3,59],立冬:[11,7,6,20],大雪:[12,6,23,17],小寒:[1,5,11,33]},2025:{立春:[2,3,22,10],驚蟄:[3,5,17,7],清明:[4,4,21,48],立夏:[5,5,9,57],芒種:[6,5,2,0],小暑:[7,7,12,5],立秋:[8,7,13,51],白露:[9,7,17,51],寒露:[10,8,9,41],立冬:[11,7,12,3],大雪:[12,7,5,4],小寒:[1,5,17,0]},2026:{立春:[2,4,4,1],驚蟄:[3,5,22,58],清明:[4,5,3,40],立夏:[5,5,15,48],芒種:[6,6,7,49],小暑:[7,7,18,1],立秋:[8,7,19,50],白露:[9,7,23,51],寒露:[10,8,15,40],立冬:[11,7,17,59],大雪:[12,7,10,57],小寒:[1,5,22,23]},2027:{立春:[2,3,9,46],驚蟄:[3,5,4,37],清明:[4,4,9,17],立夏:[5,4,21,24],芒種:[6,5,13,26],小暑:[7,6,23,37],立秋:[8,7,1,27],白露:[9,7,5,28],寒露:[10,7,21,14],立冬:[11,6,23,33],大雪:[12,6,16,33],小寒:[1,5,4,10]},2028:{立春:[2,4,15,31],驚蟄:[3,5,10,25],清明:[4,4,15,9],立夏:[5,5,3,10],芒種:[6,5,19,10],小暑:[7,6,5,22],立秋:[8,7,7,16],白露:[9,7,11,18],寒露:[10,8,3,5],立冬:[11,7,5,26],大雪:[12,6,22,20],小寒:[1,6,9,49]},2029:{立春:[2,3,21,12],驚蟄:[3,5,16,11],清明:[4,4,20,58],立夏:[5,5,9,11],芒種:[6,5,1,21],小暑:[7,6,11,35],立秋:[8,7,13,22],白露:[9,7,17,12],寒露:[10,8,8,42],立冬:[11,7,10,57],大雪:[12,7,3,43],小寒:[1,5,14,58]},2030:{立春:[2,4,3,8],驚蟄:[3,5,22,9],清明:[4,5,2,58],立夏:[5,5,15,15],芒種:[6,6,7,30],小暑:[7,7,17,43],立秋:[8,7,19,31],白露:[9,7,23,23],寒露:[10,8,14,56],立冬:[11,7,17,12],大雪:[12,7,10,2],小寒:[1,5,20,19]}};
 const MJQ=["小寒","立春","驚蟄","清明","立夏","芒種","小暑","立秋","白露","寒露","立冬","大雪"];
 const MZI=[1,2,3,4,5,6,7,8,9,10,11,0];
@@ -471,7 +831,7 @@ function analyzeDZ(dzArr){
   for(const[a,b]of CHONG){const ai=dzArr.indexOf(a),bi=dzArr.indexOf(b);if(ai>=0&&bi>=0){const key=[a,b].sort().join("");const detail=CHONG_DETAIL[key]||"兩柱能量激盪，此面向有較多變動。";ev.push({type:"衝",sym:"⚡",col:"#A8604A",mem:[a,b],pos:[ai,bi],desc:`${POS[ai]}（${a}）與${POS[bi]}（${b}）相衝。${detail}`});}}
   for(const[a,b,wx]of LIU_HE){const ai=dzArr.indexOf(a),bi=dzArr.indexOf(b);if(ai>=0&&bi>=0)ev.push({type:"六合",sym:"🤝",col:"#5A8268",mem:[a,b],pos:[ai,bi],desc:`${POS[ai]}（${a}）與${POS[bi]}（${b}）六合化${wx}，代表守成、結果、好溝通，同心協力，謹慎有計畫。能量融合，有助${wx}相關人際和諧、合作順暢。`});}
   for(const[a,b,c,wx]of SAN_HE){const has=[a,b,c].filter(x=>dzArr.includes(x));if(has.length===3){const pa=has.map(x=>dzArr.indexOf(x));const char=SAN_HE_CHAR[wx]||"";ev.push({type:"三合",sym:"✨",col:"#7A7E52",mem:has,pos:pa,desc:`${has.join("")}三合${wx}局，命中${wx}氣旺盛。${char}`});}else if(has.length===2){const pa=has.map(x=>dzArr.indexOf(x));ev.push({type:"半合",sym:"🌙",col:"#8A7352",mem:has,pos:pa,desc:`${has.join("")}半合${wx}，${wx}氣有所增強，力量不足三合，但仍有加乘效果。`});}}
-  for(const[a,b]of HAI){const ai=dzArr.indexOf(a),bi=dzArr.indexOf(b);if(ai>=0&&bi>=0)ev.push({type:"害",sym:"⚠️",col:"#96685A",mem:[a,b],pos:[ai,bi],desc:`${POS[ai]}（${a}）與${POS[bi]}（${b}）相害。${HAI_MEANING}兩個生命領域之間有隱性不和諧，需留意。`});}
+  for(const[a,b]of HAI){const ai=dzArr.indexOf(a),bi=dzArr.indexOf(b);if(ai>=0&&bi>=0)ev.push({type:"害",sym:"⚠️",col:"#96685A",mem:[a,b],pos:[ai,bi],desc:`${POS[ai]}（${a}）與${POS[bi]}（${b}）相害，${HAI_MEANING}`});}
   for(const{m,t}of XING_3){const has=m.filter(x=>dzArr.includes(x));if(has.length===m.length){const pa=has.map(x=>dzArr.indexOf(x));const td=XING_DETAIL[t]||"易有官司、病痛或人際衝突，需謹慎行事。";ev.push({type:"刑",sym:"🔺",col:"#9A5048",mem:has,pos:pa,desc:`${has.join("")}${t}。${td}`});}}
   for(const{m,t}of XING_2){const ai=dzArr.indexOf(m[0]),bi=dzArr.indexOf(m[1]);if(ai>=0&&bi>=0){const td=XING_DETAIL["無禮之刑"]||"";ev.push({type:"刑",sym:"🔺",col:"#9A5048",mem:[m[0],m[1]],pos:[ai,bi],desc:`${m.join("")}${t}。${td}`});}}
   for(const x of SELF_X){const idxs=[];dzArr.forEach((d,i)=>{if(d===x)idxs.push(i);});if(idxs.length>=2){const base=XING_DETAIL["自刑"]||"";const specific=SELF_XING_DESC[x]||"";ev.push({type:"刑",sym:"🔺",col:"#9A5048",mem:[x,x],pos:idxs,desc:`${x}${x}自刑（${idxs.map(i=>POS[i]).join("、")}）。${base}${specific}`});}}
@@ -529,12 +889,36 @@ function calcFortune(ri,today){
 function stars(r,c){return[1,2,3,4,5].map(i=>`<span style="font-size:14px;color:${i<=r?c:"#D8D2C4"}">${i<=r?"★":"☆"}</span>`).join("");}
 function barHtml(r,c){return`<div class="bar-wrap"><div class="bar-fill" style="width:${r/5*100}%;background:${c}"></div></div>`;}
 
-let gRes=null,gFort=null,gLyYear=new Date().getFullYear(),gGender="男";
+let gRes=null,gFort=null,gLyYear=new Date().getFullYear(),gGender="男",gCategoryFilter="";
 
-function setGender(g,btn){gGender=g;document.querySelectorAll(".gender-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");}
-function switchTab(i,btn){document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));btn.classList.add("active");for(let t=0;t<10;t++){var el=document.getElementById("tab"+t);if(el)el.style.display=t===i?"block":"none";}if(i===7)renderLiuYue();if(i===9)renderHistory();}
+function setGender(g,btn){gGender=g;document.querySelectorAll(".gender-btn:not(.mode-btn)").forEach(b=>b.classList.remove("active"));btn.classList.add("active");}
+function setFillMode(mode,btn){
+  document.querySelectorAll(".mode-btn").forEach(function(b){b.classList.remove("active");});
+  btn.classList.add("active");
+  var hint=document.getElementById("modeHint");
+  var nameInput=document.getElementById("inputName");
+  var nameLabel=document.getElementById("nameLabel");
+  if(mode==='other'){
+    hint.innerHTML='請輸入<strong style="color:var(--text)">客戶的出生資料</strong>，填寫完成後可直接排盤、儲存命盤或截圖分享給對方。';
+    nameInput.placeholder='請輸入客戶姓名（選填）';
+    nameLabel.textContent='客戶姓名';
+  } else {
+    hint.innerHTML='填入你自己的出生資料，立即看到命盤分析。';
+    nameInput.placeholder='請輸入姓名（選填）';
+    nameLabel.textContent='姓　名';
+  }
+}
+function switchTab(i,btn){document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));btn.classList.add("active");for(let t=0;t<12;t++){var el=document.getElementById("tab"+t);if(el)el.style.display=t===i?"block":"none";}if(i===7)renderLiuYue();if(i===9)renderHistory();if(i===10)renderCareer();if(i===11)renderServiceTab();}
 function changeYear(d){gLyYear+=d;document.getElementById("lyYearLabel").textContent=gLyYear+" 年流月";renderLiuYue();}
 function toggleSS(el){const b=el.querySelector(".ss-card-body");b.classList.toggle("open");const a=el.querySelector(".ss-card-head span:last-child");a.textContent=b.classList.contains("open")?"▲":"▼";}
+function toggleAllSS(open){
+  document.querySelectorAll('#ssDetail .ss-card').forEach(function(el){
+    var b=el.querySelector('.ss-card-body');
+    var a=el.querySelector('.ss-card-head span:last-child');
+    if(open){ b.classList.add('open'); a.textContent='▲'; }
+    else { b.classList.remove('open'); a.textContent='▼'; }
+  });
+}
 
 function dzCharBlock(zhi){
   const c=DZ_CHAR[zhi];if(!c)return"";
@@ -646,14 +1030,14 @@ const GUA_DIRS={
 };
 const DIR_COLOR={生氣:'#4A8060',天醫:'#3A6878',延年:'#707840',伏位:'#8A7352',禍害:'#A85438',六煞:'#9A6848',絕命:'#963838',五鬼:'#7A4848'};
 const DIR_DESC={
-  生氣:{tag:'吉',label:'生氣方',short:'財運、事業最強旺的方位',desc:'生氣方是八宅中能量最旺盛的吉方，主財祿興旺、貴人相助、事業蓬勃。床頭或辦公桌朝向此方，有助於提升整體運勢與生命力。此方位宜開門、安床、設書房，對求財、求職、創業特別有利。'},
-  天醫:{tag:'吉',label:'天醫方',short:'健康、求醫、化病最佳方位',desc:'天醫方主健康長壽、消災解厄，對身體虛弱或長期病患尤為重要。廚房或爐灶朝向此方，有助於家人健康。臥房安床於此方，能促進睡眠品質、加速病後康復，亦有利於求醫問診或接受療癒。'},
-  延年:{tag:'吉',label:'延年方',short:'感情、婚姻、貴人相助方位',desc:'延年方主感情圓滿、婚姻美滿、貴人緣深，是有利於人際關係與長期合作的方位。大門或主臥朝向此方，有助於夫妻和諧、伴侶緣份。此方位對談婚論嫁、維持長遠關係、事業合夥皆有正面影響。'},
-  伏位:{tag:'吉',label:'伏位方',short:'穩定守成、平安無事方位',desc:'伏位方主平穩安定、守成保業，雖不如其他三吉方積極旺盛，但有守護家宅平安、維持現狀穩固的作用。適合安置雜物間、儲藏室，或作為休息放鬆的空間。此方位有助於沉澱心靈、避免不必要的動盪。'},
-  禍害:{tag:'凶',label:'禍害方',short:'口舌是非、小人糾纏方位',desc:'禍害方主口舌是非、小人陷害、官非糾紛，此方位若有門窗或長期坐臥，容易招惹不必要的麻煩與爭執。建議避免將此方設為書房或辦公區，可擺放重物或以儲物間壓制煞氣，以化解負面影響。'},
-  六煞:{tag:'凶',label:'六煞方',short:'感情桃花紛亂、破財方位',desc:'六煞方主感情不順、桃花混亂、破財漏財，此方位若有主臥或長期睡眠，容易導致感情出問題或財務受損。男女皆需注意感情方面的誘惑與糾紛。建議以靜態空間如儲藏室或廁所安置此方，降低煞氣影響。'},
-  絕命:{tag:'凶',label:'絕命方',short:'健康損傷、重大災難方位',desc:'絕命方是八宅中最凶煞的方位，主大病、意外、破產等嚴重不利事件。此方位絕對避免安床、開門或長期工作，若家中重要空間坐落於此，宜以風水化煞方式處理，如擺放五帝錢、山海鎮或重物壓制。'},
-  五鬼:{tag:'凶',label:'五鬼方',short:'火災、盜賊、陰邪干擾方位',desc:'五鬼方主火災、盜難、陰靈干擾及神經系統問題。廚房或爐火設於此方最為危險，容易引發家中火患或意外。此方位若有長期活動，人容易睡眠不安穩、噩夢頻繁或思緒混亂。建議以靜置空間或化煞物品鎮壓。'},
+  生氣:{tag:'吉',label:'生氣方',short:'財運、事業最強旺的方位',desc:'這是八宅風水裡能量最旺的吉方，代表財運和事業最容易發揮、貴人也比較容易出現。如果床頭或辦公桌能朝這個方向，整體運勢和精神活力都會比較好。這個方位很適合用來開門、放床、設書房，對求財、找工作、創業特別有幫助。'},
+  天醫:{tag:'吉',label:'天醫方',short:'健康、求醫、化病最佳方位',desc:'這個方位主要影響健康，對身體比較虛弱或有長期慢性病的人特別重要。如果廚房或爐灶朝向這個方向，對全家人的健康會有幫助；臥房床位朝這方向，睡眠品質會比較好，生病後也比較容易恢復，看醫生或接受治療時也會更順利。'},
+  延年:{tag:'吉',label:'延年方',short:'感情、婚姻、貴人相助方位',desc:'這個方位跟感情婚姻最有關係，代表感情圓滿、容易遇到願意長久相伴的人。如果大門或主臥朝這個方向，夫妻感情會比較和諧，伴侶緣份也比較好。不管是準備結婚、想維持長久關係，還是要找事業合夥人，這個方位都會帶來正面幫助。'},
+  伏位:{tag:'吉',label:'伏位方',short:'穩定守成、平安無事方位',desc:'這個方位的力量比較溫和，主要代表平穩安定、守住現有的成果，雖然不像其他三個吉方那麼旺，但有守護家宅平安、讓生活維持穩定的作用。適合用來當雜物間或儲藏室，也很適合當作休息放鬆的角落，幫助心情沉靜下來，避免不必要的波動。'},
+  禍害:{tag:'凶',label:'禍害方',short:'口舌是非、小人糾纏方位',desc:'這個方位容易招來口舌糾紛、被人在背後說壞話，或捲入不必要的官非麻煩。如果這個方位有門窗，或是你常常待在那裡，比較容易遇到莫名其妙的爭執。建議不要把書房或辦公空間設在這裡，可以放一些重物，或當作儲物空間來壓制這個方位的負面能量。'},
+  六煞:{tag:'凶',label:'六煞方',short:'感情桃花紛亂、破財方位',desc:'這個方位容易讓感情變得複雜，桃花過旺反而帶來困擾，財務上也比較容易出狀況、漏財。如果主臥或常睡覺的地方在這個方向，感情和財務都要多留意。不管男女都建議多注意感情上的誘惑，這個方位適合當儲藏室或廁所，能降低它帶來的負面影響。'},
+  絕命:{tag:'凶',label:'絕命方',short:'健康損傷、重大災難方位',desc:'這是八宅風水裡最需要留意的方位，容易跟重大疾病、意外或財務上的大破敗有關。這個方位絕對不建議放床、開門或長時間工作。如果家裡重要的空間剛好坐落在這裡，建議用風水化解的方式處理，例如擺放五帝錢、山海鎮，或用重物來壓制。'},
+  五鬼:{tag:'凶',label:'五鬼方',short:'火災、盜賊、陰邪干擾方位',desc:'這個方位跟火災、失竊或情緒不穩定有關。廚房或爐火如果設在這個方向風險最高，比較容易發生意外。如果常常待在這個方位附近，容易睡不安穩、做惡夢，或思緒比較混亂。建議讓這個方位保持安靜不常使用，或用化煞的物品來鎮壓這股能量。'},
 };
 function calcMingGua(birthYear,gender){
   var nc=birthYear-1911;
@@ -673,6 +1057,216 @@ const SS_DIM = {
   感情:{比肩:"感情穩定，但易有競爭者出現，需多付出關心。",劫財:"感情波動，易有第三者介入，溝通要坦誠。",食神:"感情融洽，甜蜜指數高，適合增進感情。",傷官:"感情多變，言辭易傷人，需注意表達方式。",正印:"感情平穩，依賴感增強，有貴人協助感情事。",偏印:"感情偏淡，不易表達，適合獨自沉澱。",偏財:"異性緣旺，桃花機率高，已婚者需謹慎。",正財:"感情穩定，適合定下承諾，男命疼惜另一半。",正官:  "感情有名分，適合論及婚嫁，女命留意老公動態。",七殺:"感情壓力大，摩擦增加，需多溝通避免衝突。"},
   財運:{比肩:"財運平穩，不宜借錢給人，避免跟會合夥。",劫財:"財務起伏，破財風險高，謹慎理財不投機。",食神:"財運順暢，才華帶來收入，正財偏財均有機會。",傷官:"財運不穩定，創新帶來收益，但需防口舌破財。",正印:"財運不以財為重，貴人帶來間接利益。",偏印:"財運清淡，宜守不宜攻，謹防假貴人詐財。",偏財:"偏財旺，靈活理財，大小財均有機會，但流動快。",正財:"正財穩健，固定收入佳，理財投資宜保守。",正官:"財運隨名聲而來，薪資獎金可期，守規矩有財。",七殺:"財運受阻，意外破財需防，低調謹慎可化解。"}
 };
+
+// ── 共用：計算命盤中各十神出現次數，並找出最主要的十神 ──
+function calcMainSS(res){
+  var ssCount={};
+  res.pillars.forEach(function(p){
+    if(p.ss!=='日元'&&p.ss!=='—') ssCount[p.ss]=(ssCount[p.ss]||0)+1;
+  });
+  res.pillars.forEach(function(p){
+    p.cangSS.forEach(function(c){
+      if(c.ss!=='—') ssCount[c.ss]=(ssCount[c.ss]||0)+0.5;
+    });
+  });
+  var sortedSS=Object.entries(ssCount).sort(function(a,b){return b[1]-a[1];});
+  var mainSS=sortedSS.length>0?sortedSS[0][0]:null;
+  return {ssCount:ssCount, mainSS:mainSS};
+}
+
+function renderSummary(){
+  if(!gRes) return;
+  var res=gRes, ri=res.ri, riWx=res.riWx;
+  var sqPlain = res.sq==='身強'
+    ? '天生能量比較飽滿，做事有底氣，遇到壓力扛得住，但也要小心太固執、不聽人勸'
+    : '天生能量偏纖細敏感，需要多依靠他人幫助，遇到壓力容易感到吃不消，要懂得適時休息和求助';
+
+  var ssInfo=calcMainSS(res);
+  var ssCount=ssInfo.ssCount, mainSS=ssInfo.mainSS;
+  var mainSSPlain=mainSS&&SS_PLAIN[mainSS]?SS_PLAIN[mainSS]:'';
+
+  // 五行強弱描述
+  var wxMax=Object.entries(res.wxC).sort(function(a,b){return b[1]-a[1];})[0];
+  var wxMin=Object.entries(res.wxC).filter(function(e){return e[1]===0;}).map(function(e){return e[0];});
+
+  // 命卦
+  var mgNum=calcMingGua(res.date.getFullYear(), gGender);
+  var mgInfo=GUAS[mgNum]||{};
+
+  var rows=[];
+
+  // 第一句：日主＋身強弱
+  rows.push('<div>你的日主是<strong style="color:var(--text)">'+ri+'（'+riWx+'）</strong>，'+sqPlain+'。</div>');
+
+  // 第二句：主要十神特質
+  if(mainSSPlain){
+    rows.push('<div>命盤中<strong style="color:var(--text)">'+mainSS+'</strong>的能量最明顯，'+mainSSPlain+'。</div>');
+  }
+
+  // 第三句：五行分佈
+  if(wxMin.length>0 && wxMin.length<5){
+    rows.push('<div>五行中比較缺乏<strong style="color:var(--text)">'+wxMin.join('、')+'</strong>，這部分的特質或運勢可能較弱，可透過顏色、方位或職業選擇來補強。</div>');
+  } else if(wxMax[1]>=4){
+    rows.push('<div>五行中<strong style="color:var(--text)">'+wxMax[0]+'</strong>特別旺盛，這個元素的特質會在你身上特別明顯。</div>');
+  }
+
+  // 第四句：今年犯太歲提醒
+  var thisYear=new Date().getFullYear();
+  var thisYearZhi=DZ[((thisYear-4)%12+12)%12];
+  var birthYearZhi=res.pillars[0].zhi;
+  var tsNow=checkTaiSui(thisYearZhi, birthYearZhi);
+  if(tsNow){
+    rows.push('<div>今年（'+thisYear+'年）你<strong style="color:#A85438">'+tsNow.name+'</strong>，'+tsNow.desc+'</div>');
+  }
+
+  // 第五句：凶象提示（白話）
+  if(res.xiong.length>0){
+    var xiongNames=res.xiong.map(function(x){return x.name;}).join('、');
+    rows.push('<div>命盤中有<strong style="color:#9A5840">'+xiongNames+'</strong>的組合，代表某些方面需要多留意（詳見「分析」分頁），但命理只是提醒，不是定局，懂得化解就沒問題。</div>');
+  }
+
+  // 第六句：命卦
+  if(mgInfo.name){
+    rows.push('<div>你的命卦是<strong style="color:var(--text)">'+mgNum+mgInfo.name+'</strong>（'+mgInfo.group+'），'+(mgInfo.desc||'')+'</div>');
+  }
+
+  document.getElementById('summaryBody').innerHTML=rows.join('');
+}
+
+// 服務介紹完整內容（固定顯示，不依賴命盤判斷，所有人都能看到完整介紹）
+const SERVICE_DETAIL={
+  補財庫:{
+    icon:'💰', color:'#B8923A',
+    name:'補財庫',
+    intro:'補財庫是傳統命理中常見的祈福儀式，透過老師代為向財神祈求，補強個人財運的根基，幫助穩定財庫、減少破財的機會。',
+    suit:'適合長期財來財去、存不住錢、感覺賺得到但留不住，或命盤顯示財星較弱、財庫被衝的人。',
+    flow:'由老師依你的生辰八字進行代辦祈福，不需本人到場，完成後會提供儀式紀錄供你安心。'
+  },
+  納財精油:{
+    icon:'🌿', color:'#7A9A5A',
+    name:'納財精油',
+    intro:'依個人命盤五行調配的開運精油，可隨身攜帶或居家使用，輔助招財氣場，幫助財運流通。',
+    suit:'適合想日常輔助招財氣場、或剛完成補財庫想持續維持效果的人。',
+    flow:'依你的命盤五行屬性調配，完成後郵寄到府，附使用方式說明。'
+  },
+  迴向祈福:{
+    icon:'🙏', color:'#8A7AA8',
+    name:'迴向祈福',
+    intro:'運勢卡關、諸事不順時，透過迴向功德的方式，將累積的善念和功德力量轉向，幫助消解眼前的業力阻礙。',
+    suit:'適合近期感覺運勢卡關、做什麼都不順、或命盤顯示這幾年凶象組合較多的人。',
+    flow:'由老師依你的狀況進行迴向祈福儀式，不需本人到場，完成後會告知進行情況。'
+  },
+  除小人轉運:{
+    icon:'🛡️', color:'#A85838',
+    name:'除小人轉運祈福',
+    intro:'針對小人是非纏身、被陷害背刺、人際關係不順暢的狀況，透過轉運祈福來化解暗中的阻礙與是非。',
+    suit:'適合近期常遇到小人陷害、被人背刺、人際關係莫名不順，或命盤顯示偏印過重、地支相害的人。',
+    flow:'由老師依你的命盤狀況進行轉運祈福，完成後會提供說明。'
+  },
+  羅盤:{
+    icon:'🧭', color:'#3A6878',
+    name:'隨身羅盤',
+    intro:'傳統羅盤具有定方位、安磁場的作用，隨身攜帶有助於趨吉避凶，尤其對於經常奔波移動的人特別適用。',
+    suit:'適合經常需要開車、出差、移動機會多，或命盤顯示驛馬星較重、容易有車關的人。',
+    flow:'依個人需求挑選合適款式，提供使用與隨身攜帶建議。'
+  },
+  芙蓉除穢:{
+    icon:'🌸', color:'#A85878',
+    name:'芙蓉沐浴乳／芙蓉精油（除穢化煞）',
+    intro:'芙蓉自古被視為具有除穢化煞效果的植物，製成沐浴乳或精油使用，有助於清淨身心、穩定氣場。',
+    suit:'適合近期感覺氣場混亂、犯太歲、或剛經歷不順遂的事想淨化身心的人。',
+    flow:'居家自行使用即可，老師會提供正確使用方式與時機建議。'
+  }
+};
+
+function renderServiceCard(){
+  if(!gRes) return;
+  var res=gRes;
+  var ssInfo=calcMainSS(res);
+  var thisYear=new Date().getFullYear();
+  var thisYearZhi=DZ[((thisYear-4)%12+12)%12];
+  var birthYearZhi=res.pillars[0].zhi;
+  var taiSuiNow=checkTaiSui(thisYearZhi, birthYearZhi);
+  var services=detectServices(res, ssInfo.mainSS, ssInfo.ssCount, taiSuiNow);
+
+  // 存到全域變數，供「開運服務」分頁使用
+  window._matchedServices=services;
+
+  var banner=document.getElementById('serviceBanner');
+  var badges=document.getElementById('serviceBannerBadges');
+  if(!banner||!badges) return;
+
+  if(services.length===0){
+    banner.style.display='none';
+    return;
+  }
+  banner.style.display='block';
+  badges.innerHTML=services.map(function(s){
+    var info=SERVICE_INFO[s.key];
+    if(!info) return '';
+    return '<span style="font-size:12px;padding:4px 12px;background:#FFFFFF;color:'+info.color+';border:1px solid '+info.color+'50;border-radius:14px">'+info.icon+' '+info.name+'</span>';
+  }).join('');
+}
+
+function goToServiceTab(){
+  var btns=document.querySelectorAll('.tab');
+  var targetBtn=null;
+  btns.forEach(function(b){ if(b.textContent.trim()==='開運服務') targetBtn=b; });
+  if(targetBtn) switchTab(11, targetBtn);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderServiceTab(){
+  var services=window._matchedServices||[];
+  var matchCard=document.getElementById('serviceMatchCard');
+  var matchBadges=document.getElementById('serviceMatchBadges');
+  if(matchCard&&matchBadges){
+    if(services.length>0){
+      matchCard.style.display='block';
+      matchBadges.innerHTML=services.map(function(s){
+        var info=SERVICE_INFO[s.key];
+        if(!info) return '';
+        return '<span style="font-size:12px;padding:5px 13px;background:'+info.color+'15;color:'+info.color+';border:1px solid '+info.color+'50;border-radius:14px">'+info.icon+' '+info.name+'</span>';
+      }).join('');
+    } else {
+      matchCard.style.display='none';
+    }
+  }
+
+  var matchKeys=services.map(function(s){return s.key;});
+  var matchReasons={};
+  services.forEach(function(s){ matchReasons[s.key]=s.reasons; });
+
+  var introList=document.getElementById('serviceIntroList');
+  if(!introList) return;
+  introList.innerHTML=Object.keys(SERVICE_DETAIL).map(function(key){
+    var d=SERVICE_DETAIL[key];
+    var isMatched=matchKeys.indexOf(key)>-1;
+    var matchedHtml=isMatched?'<div style="margin-top:10px;padding:10px 12px;background:'+d.color+'12;border-left:3px solid '+d.color+';font-size:12px;color:'+d.color+';line-height:1.8"><strong>✦ 根據你的命盤：</strong>'+matchReasons[key].join('　')+'</div>':'';
+    return '<div class="acc-item" style="border-color:'+d.color+'40;margin-bottom:8px'+(isMatched?';box-shadow:0 0 0 1px '+d.color+'30':'')+'">'
+      +'<div class="acc-head" style="padding:13px 14px;gap:10px">'
+      +'<span style="font-size:22px;flex-shrink:0">'+d.icon+'</span>'
+      +'<div style="flex:1">'
+      +'<div style="font-size:14px;font-weight:600;color:'+d.color+'">'+d.name+(isMatched?' <span style="font-size:10px;background:'+d.color+';color:#FFF;padding:1px 7px;border-radius:10px;margin-left:4px">推薦</span>':'')+'</div>'
+      +'</div>'
+      +'<span class="acc-arrow">▼</span>'
+      +'</div>'
+      +'<div class="acc-body">'
+      +'<div style="padding:13px 14px;font-size:13px;color:var(--text2);line-height:1.85">'
+      +'<div style="margin-bottom:10px">'+d.intro+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px;letter-spacing:1px">適合什麼情況</div>'
+      +'<div style="margin-bottom:10px">'+d.suit+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:4px;letter-spacing:1px">服務流程</div>'
+      +'<div>'+d.flow+'</div>'
+      +matchedHtml
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  initAllAcc(introList);
+}
+
 function renderAll(){
   // 吉時/晚子時提示
   var wanNote=document.getElementById('wanNote');
@@ -691,6 +1285,8 @@ function renderAll(){
       wanNote.innerHTML='';
     }
   }
+  renderSummary();
+  renderServiceCard();
   const res=gRes,fort=gFort,ri=res.ri,riC=WX_C[res.riWx],riL=WX_LT[res.riWx];
   document.getElementById("wanNote").style.display=res.isWan?"block":"none";
 
@@ -748,9 +1344,9 @@ function renderAll(){
   }).join("");
 
   document.getElementById("mhkSection").innerHTML=[
-    {type:"馬",icon:"🐎",col:"#4A7080",bg:"#EBF2F5",list:res.maL,desc:["無馬：不愛動，沒有衝動，要嘛說走就走要嘛不走，較不適合當業務，適合內勤工作，大路癡。","一馬：好動不寧，不受拘束，有行動力，執行力。","二馬：好動閒不住，不喜受約束，易奔波勞碌，逢衝主車關。","三馬：藝高人膽大，勞碌奔波四處跑，多頭馬車無方向感，目標多，易車關。","四馬：多勞碌奔波，居無定所四處跑，一生無所成就，做到老漂一生，無法靠岸休息，注意車關。"]},
-    {type:"花",icon:"🌸",col:"#A8604A",bg:"#F8F0EC",list:res.huaL,desc:["無花：外表嚴肅不討喜，人際關係、異性緣較不佳，自己要常微笑（如八字有偏財，則有歡喜心，也等於一個花）。","一花：人緣佳，人際關係、異性緣佳。","二花：很有人緣，容貌佳（較耐看，越看越有人緣），人際關係、異性緣佳。","三花：人緣佳，異性緣特別好，容貌佳，交際手腕佳善於應對，適合對外公關，才華洋溢。","四花：同三桃花，超有人緣或超沒人緣（反格），才華洋溢，善應對；有偏財（妾）需小心，以免散財或孤芳自賞自憐。"]},
-    {type:"庫",icon:"📦",col:"#7A7E52",bg:"#F4F4E8",list:res.kuL,desc:["無庫：散財童子，看錢不重，財來財去，錢不是自己的。","一庫：對自己節儉，對別人慷慨。","二庫：很能調度金錢，節儉善理財，逢衝開銷大難聚財。","三庫：借錢給別人不敢要回來，財容易分散，出手大方，易四處投資。","四庫：走運時賺進天下財（皇帝命格），不走運時散盡天下財（乞丐命格），有衝開，錢財不易留住。"]},
+    {type:"馬",icon:"🐎",col:"#4A7080",bg:"#EBF2F5",list:res.maL,desc:["命盤中沒有驛馬星的人，通常比較不愛動，沒什麼衝動想往外跑，要動就乾脆說走就走，要不然就完全不動，比較不適合常出差的業務工作，適合待在內部、穩定一點的崗位，方向感也容易比較差。","有一個驛馬星的人，個性比較好動、靜不下來，行動力和執行力都不錯，喜歡有變化的生活。","有兩個驛馬星的人，會更加靜不下來、不喜歡被約束，容易奔波勞碌，東奔西跑，運勢不好的年份要特別留意交通安全。","有三個驛馬星的人，個性藝高人膽大，整天勞碌奔波四處跑，常常多頭馬車找不到方向，想做的事情太多反而分散精力，也要多注意交通安全。","有四個驛馬星的人，一生比較容易勞碌奔波、居無定所，很難真正安定下來休息，有點像「做到老、漂一生」的感覺，這幾年特別要注意交通安全。"]},
+    {type:"花",icon:"🌸",col:"#A8604A",bg:"#F8F0EC",list:res.huaL,desc:["命盤中沒有桃花星的人，外表給人感覺比較嚴肅、不容易親近，人際關係和異性緣可能會稍弱一點，建議自己平常多保持笑容（如果命盤中有偏財星，效果也類似多了一個桃花，會帶來不少歡喜心）。","有一個桃花星的人，人緣不錯，人際關係和異性緣都還算順利。","有兩個桃花星的人，人緣特別好，長相也容易讓人覺得耐看、越看越有魅力，人際和感情運都不錯。","有三個桃花星的人，人緣很旺、異性緣特別好，外型出色，交際手腕也不錯，很適合做需要對外應酬的公關類工作，才華也容易被看見。","有四個桃花星的人，跟三個桃花類似，但容易走向兩個極端：超級有人緣，或反而完全相反、人緣不佳。才華洋溢、應對得宜，但如果命盤同時有偏財星，要小心可能因為桃花而散財，或變得有點孤芳自賞。"]},
+    {type:"庫",icon:"📦",col:"#7A7E52",bg:"#F4F4E8",list:res.kuL,desc:["命盤中沒有財庫的人，賺到的錢比較難留住，對金錢看得比較淡，常常財來財去，感覺錢好像不是真正屬於自己的。","有一個財庫的人，對自己比較節省，但對別人卻很大方慷慨。","有兩個財庫的人，很懂得調度金錢、節儉理財，但運勢不好被衝到的年份花費會變大，財富不容易守住。","有三個財庫的人，借錢給別人常常不敢要回來，財富容易分散出去，花錢比較大方，也喜歡到處投資嘗試。","有四個財庫的人，運勢好的時候可能賺進大筆財富（像皇帝命格一樣），但運勢不好時也可能把錢全部花光（像乞丐命格），如果財庫被流年衝到，錢財會特別不容易留住。"]},
   ].map(({type,col,bg,list,desc})=>`<div style="margin-bottom:10px;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-left:3px solid ${col}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:14px;font-weight:600;color:${col}">${type}星（${list.length}個）${list.length>0?"："+list.map(x=>x.d+POS[x.i][0]).join("、"):""}</span></div><div style="font-size:14px;color:#5A5347;line-height:1.85">${desc[Math.min(list.length,4)]}</div></div>`).join("");
 
   function tgCharBlock(gan){
@@ -768,13 +1364,18 @@ function renderAll(){
   document.getElementById("charMonth").innerHTML=dzCharBlock(res.pillars[1].zhi);
 
   const by=TG_BY[ri];
-  const tgBody=TG_BODY[ri]||"";
+  const tgBody=by?by.bw:"";
   document.getElementById("healthTG").innerHTML=by?`<div style="display:flex;gap:14px;align-items:flex-start"><div style="width:64px;height:64px;flex-shrink:0;background:var(--card);border:1px solid ${riC}50;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:26px;font-weight:600;color:${riC};line-height:1">${ri}</div><div style="font-size:12px;color:${riC};opacity:.75;margin-top:3px">${res.riWx}</div></div><div style="flex:1"><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px"><span style="font-size:13px;font-weight:600;padding:3px 12px;background:var(--card);color:${riC};border:1px solid ${riC}50">臟腑：${by.zf}</span><span style="font-size:13px;font-weight:600;padding:3px 12px;background:var(--card);color:${riC};border:1px solid ${riC}50">身體部位：${tgBody}</span></div><div style="font-size:15px;color:#5A5347;line-height:1.95">${by.desc}</div></div></div>`:"";
   document.getElementById("healthDZ").innerHTML=res.pillars.map((p,i)=>{
     const b=DZ_BY[p.zhi];if(!b)return"";
     const gc=WX_C[TG_WX[CANG[p.zhi][0]]||"土"]||"#8A7352";const gl=WX_LT[TG_WX[CANG[p.zhi][0]]||"土"]||"#F6F1E8";
     const bodyPart=DZ_BODY[p.zhi]||"";
-    return`<div class="health-item" style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${gc}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600;color:${gc}">${POS[i]} ${p.zhi}</span><span style="font-size:11px;padding:1px 8px;background:var(--card);color:${gc};border:1px solid ${gc}40">臟腑：${b.zf}</span>${bodyPart?`<span style="font-size:13px;padding:2px 10px;background:var(--card);color:${gc};border:1px solid ${gc}40">部位：${bodyPart}</span>`:""}<span style="font-size:13px;color:#A39B8E">${b.st}時</span></div><div style="font-size:14px;color:#5A5347;line-height:1.85">${b.desc}</div></div>`;
+    return`<div class="health-item" style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${gc}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600;color:${gc}">${POS[i]} ${p.zhi}</span><span style="font-size:11px;padding:1px 8px;background:var(--card);color:${gc};border:1px solid ${gc}40">臟腑：${b.zf}</span>${bodyPart?`<span style="font-size:13px;padding:2px 10px;background:var(--card);color:${gc};border:1px solid ${gc}40">部位：${bodyPart}</span>`:""}</div><div style="font-size:14px;color:#5A5347;line-height:1.85">${b.desc}</div></div>`;
+  }).join("");
+  document.getElementById("healthHour").innerHTML=Object.entries(HOUR_HEALTH).map(([zhi,h])=>{
+    const gc=WX_C[TG_WX[CANG[zhi][0]]||"土"]||"#8A7352";
+    const bodyPart=DZ_BODY[zhi]||"";
+    return`<div class="health-item" style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${gc}"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="font-size:14px;font-weight:600;color:${gc}">${zhi}時</span><span style="font-size:11px;padding:1px 8px;background:var(--card);color:${gc};border:1px solid ${gc}40">${h.st}</span><span style="font-size:11px;padding:1px 8px;background:var(--card);color:${gc};border:1px solid ${gc}40">臟腑：${h.zf}</span>${bodyPart?`<span style="font-size:13px;padding:2px 10px;background:var(--card);color:${gc};border:1px solid ${gc}40">部位：${bodyPart}</span>`:""}</div><div style="font-size:14px;color:#5A5347;line-height:1.85">${h.desc}</div></div>`;
   }).join("");
   document.getElementById("healthWX").innerHTML=Object.entries(WX_HEALTH).map(([wx,h])=>{
     const v=res.wxC[wx]||0;const gc=WX_C[wx];const gl=WX_LT[wx];
@@ -788,24 +1389,43 @@ function renderAll(){
   document.getElementById("tgHe").innerHTML=res.tgHe.length===0?'<div class="empty-note">命盤天干無五合。</div>':res.tgHe.map(function(h){return'<div class="tg-rel-item" style="background:var(--card);border-color:'+WX_C[h.wx]+'50;border-left:3px solid '+WX_C[h.wx]+'"><span style="font-size:12px;font-weight:600;padding:2px 10px;background:var(--card);color:'+WX_C[h.wx]+';border:1px solid '+WX_C[h.wx]+'50;white-space:nowrap;flex-shrink:0">'+h.a+h.b+"合"+h.wx+" ・ "+h.name+'</span><div style="flex:1;font-size:12px;color:var(--text2);line-height:1.8">'+POS[h.posA]+h.a+" × "+POS[h.posB]+h.b+"<br>"+h.desc+'</div></div>';}).join("");
 
   document.getElementById("dzEvents").innerHTML=res.dzEvents.length===0?'<div class="empty-note">地支無明顯衝合害刑，格局較為平和。</div>':res.dzEvents.map(function(ev){return'<div class="ev-item"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap"><span style="font-size:13px;font-weight:600;padding:1px 10px;background:'+ev.col+'18;color:'+ev.col+';border:1px solid '+ev.col+'40">'+ev.mem.join("")+" "+ev.type+'</span><span style="font-size:11px;color:var(--text3)">'+ev.pos.map(function(p){return POS[p];}).join(" × ")+'</span></div><div style="font-size:12px;color:var(--text2);line-height:1.85">'+ev.desc+'</div></div>';}).join("");
-  document.getElementById("xiongXiang").innerHTML=res.xiong.length===0?'<div class="empty-note">✓ 命盤無明顯凶象。</div>':res.xiong.map(function(x){return'<div class="xiong-item"><div style="font-size:14px;font-weight:600;color:#9A5840;margin-bottom:6px">⚠ '+x.name+'</div><div style="font-size:12px;color:var(--text2);line-height:1.85;margin-bottom:8px">'+x.desc+'</div><div style="font-size:12px;padding:9px 12px;background:var(--card);color:#4E7858;border:1px solid #A0C8A8;line-height:1.8">化解：'+x.fix+'</div></div>';}).join("");
+  var xiongMainHtml=res.xiong.length===0?'<div class="empty-note">✓ 命盤無明顯凶象。</div>':res.xiong.map(function(x){return'<div class="xiong-item"><div style="font-size:14px;font-weight:600;color:#9A5840;margin-bottom:6px">⚠ '+x.name+'</div><div style="font-size:12px;color:var(--text2);line-height:1.85;margin-bottom:8px">'+x.desc+'</div><div style="font-size:12px;padding:9px 12px;background:var(--card);color:#4E7858;border:1px solid #A0C8A8;line-height:1.8">化解：'+x.fix+'</div></div>';}).join("");
+  var xiongHintHtml=res.xiong.length>0?'<div style="margin-top:10px;padding:11px 14px;background:#F8F0EC;border:1px solid #A8587840;font-size:12px;color:#8A4838;line-height:1.8">💡 命盤有凶象組合時，部分人會選擇透過迴向祈福或除小人轉運來幫助化解。詳細建議可以參考「適合」分頁最下方的開運建議，或直接洽詢老師。</div>':'';
+  document.getElementById("xiongXiang").innerHTML=xiongMainHtml+xiongHintHtml;
 
   const ssPresent=new Set(res.pillars.filter((_,i)=>i!==2).map(p=>p.ss).filter(s=>s!=="日元"&&s!=="—"));
   document.getElementById("ssGrid").innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">${res.pillars.filter(p=>p.ss!=="日元").map(p=>{const gc=WX_C[p.ganWx],gl=WX_LT[p.ganWx];return`<div style="padding:12px 8px;text-align:center;background:var(--card);border:1px solid ${gc}30;border-top:3px solid ${gc};transition:box-shadow .2s,transform .2s" onmouseover="this.style.boxShadow='0 4px 14px rgba(60,50,35,.1)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='';this.style.transform=''"><div style="font-size:11px;color:#9A9284;margin-bottom:5px;letter-spacing:1px">${p.label}柱</div><div style="font-size:clamp(16px,5vw,24px);font-weight:600;color:${gc};line-height:1.1">${p.gan}</div><div style="margin-top:5px;display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;background:var(--card);color:${gc};border:1px solid ${gc}50">${p.ss}</div><div style="margin-top:9px;padding-top:9px;border-top:1px dashed ${gc}35"><div style="font-size:10px;color:#9A9284;margin-bottom:4px;letter-spacing:.5px">藏干</div><div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center">${p.cangSS.map(({g,ss})=>`<span style="font-size:10px;padding:1px 4px;color:${WX_C[TG_WX[g]]};background:var(--card);border:1px solid ${WX_C[TG_WX[g]]}50">${g}${ss!=="—"?` ${ss}`:""}</span>`).join("")}</div></div></div>`}).join("")}</div>`;
   document.getElementById("ssDetail").innerHTML=[...ssPresent].map(function(ss){
     var d=SS_DETAIL[ss];if(!d)return"";
-    return'<div class="ss-card" onclick="toggleSS(this)"><div class="ss-card-head"><span style="font-size:14px;font-weight:700;color:var(--text)">'+ss+'</span><span style="font-size:11px;color:var(--text3);flex:1;padding-left:8px">'+d.rep+'</span><span style="font-size:10px;color:var(--text3)">▼</span></div><div class="ss-card-body"><div class="ss-sub-title">特質</div><div>'+d.traits+'</div><div class="ss-sub-title">身強時</div><div>'+d.qiang+'</div><div class="ss-sub-title">身弱時</div><div>'+d.ruo+'</div><div style="margin-top:9px;padding:10px 12px;background:var(--card);font-size:12px;line-height:1.8;color:var(--gold);border-left:3px solid var(--gold);padding-left:12px">📌 '+d.note+'</div></div></div>';
+    var sqLabel=res.sq==='身強'?'身強時':'身弱時';
+    var sqText=res.sq==='身強'?d.qiang:d.ruo;
+    return'<div class="ss-card" onclick="toggleSS(this)"><div class="ss-card-head"><span style="font-size:14px;font-weight:700;color:var(--text)">'+ss+'</span><span style="font-size:11px;color:var(--text3);flex:1;padding-left:8px">'+d.rep+'</span><span style="font-size:10px;color:var(--text3)">▼</span></div><div class="ss-card-body"><div class="ss-sub-title">特質</div><div>'+d.traits+'</div><div class="ss-sub-title">'+sqLabel+'（你的命格）</div><div>'+sqText+'</div><div style="margin-top:9px;padding:10px 12px;background:var(--card);font-size:12px;line-height:1.8;color:var(--gold);border-left:3px solid var(--gold);padding-left:12px">📌 '+d.note+'</div></div></div>';
   }).join("");
 
   const dy=res.dayun;
   document.getElementById("dyTitle").textContent=gGender+"命 ・ "+TG_YY[res.yearGan]+"年生";
   document.getElementById("dyDir").textContent=`${dy.shunPai?"順排":"逆排"} ・ ${dy.startAge}歲${dy.remM>0?dy.remM+"個月":""}起運`;
   const R2={比肩:3,劫財:2,食神:4,傷官:3,正印:5,偏印:4,偏財:4,正財:5,正官:4,七殺:2};
-  const dDesc={比肩:"平穩，強化自身實力與人脈。",劫財:"競爭較強，謹慎財務決策。",食神:"創意旺盛，才藝發展佳。",傷官:"突破創新，但需避免衝突。",正印:"貴人助力，學習進修吉。",偏印:"直覺靈敏，適合研究探索。",偏財:"偏財運旺，靈活把握機遇。",正財:"正財穩健，腳踏實地有成。",正官:"官運順暢，職場晉升有望。",七殺:"挑戰較多，磨礪後更強大。"};
+  const dDesc={比肩:"運勢平穩，身邊朋友變多，人脈跟自身實力都會增強，是個適合累積資源的階段。",劫財:"競爭氣氛變強，容易遇到財務上的誘惑或損失，這幾年理財要更謹慎，避免借貸或合夥投資。",食神:"創意和才華容易被看見，生活品質也會提升，適合發展興趣、進修或做與創作有關的事。",傷官:"想法變得活躍，敢於突破現狀，但也容易因為說話直接而起衝突，建議多注意溝通方式。",正印:"會遇到願意拉你一把的長輩或貴人，很適合進修學習，整體運勢偏向穩定加分。",偏印:"直覺變敏銳，容易對某些領域產生濃厚興趣，適合往研究、心靈成長或專業技能鑽研。",偏財:"偏財運比較旺，賺錢機會變多但也來得快去得快，建議把握機會的同時也要懂得守成。",正財:"財運穩健向上，靠自己的努力就能慢慢累積成果，是踏實打基礎的好階段。",正官:"事業和地位容易往上走，工作上會得到更多認可，適合衝刺升遷或考試。",七殺:"壓力和挑戰會變多，雖然辛苦，但撐過去之後通常會讓人變得更強韌、更有能力。"};
+
+  // 計算目前實際年齡，找出對應的大運柱
+  const nowDt=new Date();
+  let curAge=nowDt.getFullYear()-res.date.getFullYear();
+  // 若今年生日還沒到，年齡少算一歲
+  const bdPassed=(nowDt.getMonth()>res.date.getMonth())||(nowDt.getMonth()===res.date.getMonth()&&nowDt.getDate()>=res.date.getDate());
+  if(!bdPassed) curAge--;
+  let curDyIdx=-1;
+  dy.dyuns.forEach((d,i)=>{
+    const sa=dy.startAge+i*10;
+    if(curAge>=sa && curAge<=sa+9) curDyIdx=i;
+  });
+
   document.getElementById("dyList").innerHTML=dy.dyuns.map((d,i)=>{
     const sa=dy.startAge+i*10;const ss=shiShen(ri,d.gan);const gc=WX_C[TG_WX[d.gan]],gl=WX_LT[TG_WX[d.gan]];const rat=R2[ss]||3;
+    const isCurrent=(i===curDyIdx);
     var dimHtml=["整體","工作","感情","財運"].map(function(dim){return '<div class="dim-cell"><div class="dim-label">'+dim+'</div><div class="dim-text">'+((SS_DIM[dim]||{})[ss]||'')+'</div></div>';}).join("");
-    return '<div class="acc-item" style="border-color:'+gc+'40"><div class="acc-head"><div style="min-width:56px;text-align:center"><div style="font-size:clamp(15px,4vw,20px);font-weight:600;color:'+gc+'">'+d.gan+d.zhi+'</div><div style="font-size:11px;color:var(--text3);margin-top:3px">'+sa+'–'+(sa+9)+'歲</div></div><div style="flex:1;padding:0 8px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><span style="font-size:12px;font-weight:600;padding:1px 9px;background:var(--card);color:'+gc+';border:1px solid '+gc+'50">'+ss+'</span><span class="stars">'+stars(rat,gc)+'</span></div><div style="font-size:12px;color:var(--text2);line-height:1.5">'+(dDesc[ss]||'')+'</div></div><span class="acc-arrow">▼</span></div><div class="acc-body"><div class="dim-grid">'+dimHtml+'</div></div></div>';
+    const curBadge=isCurrent?'<span style="font-size:10px;font-weight:700;padding:2px 8px;background:'+gc+';color:#FFF;margin-left:8px;letter-spacing:1px">現在</span>':'';
+    return '<div class="acc-item" style="border:'+(isCurrent?'2.5px solid '+gc:'1px solid '+gc+'40')+'"><div class="acc-head"><div style="min-width:56px;text-align:center"><div style="font-size:clamp(15px,4vw,20px);font-weight:600;color:'+gc+'">'+d.gan+d.zhi+'</div><div style="font-size:11px;color:var(--text3);margin-top:3px">'+sa+'–'+(sa+9)+'歲</div></div><div style="flex:1;padding:0 8px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap"><span style="font-size:12px;font-weight:600;padding:1px 9px;background:var(--card);color:'+gc+';border:1px solid '+gc+'50">'+ss+'</span><span class="stars">'+stars(rat,gc)+'</span>'+curBadge+'</div><div style="font-size:12px;color:var(--text2);line-height:1.5">'+(dDesc[ss]||'')+'</div></div><span class="acc-arrow">▼</span></div><div class="acc-body"><div class="dim-grid">'+dimHtml+'</div></div></div>';
   }).join("");
   initAllAcc(document.getElementById("dyList"));
 
@@ -836,12 +1456,16 @@ function renderAll(){
   document.getElementById("dimGrid").innerHTML=["整體","工作","感情","財運"].map(function(dim){var txt=(SS_DIM[dim]||{})[fort.ss]||"";return'<div class="dim-cell"><div class="dim-label">'+dim+'</div><div class="dim-text">'+txt+'</div></div>';}).join("");
 
   const yn=new Date().getFullYear();
+  const birthYearZhi=res.pillars[0].zhi;
   document.getElementById("lyList").innerHTML=Array.from({length:10},(_,i)=>{
     const y=yn+i;const gi=((y-4)%10+10)%10,zi=((y-4)%12+12)%12;
     const g=TG[gi],z=DZ[zi];const ss=shiShen(ri,g);const gc=WX_C[TG_WX[g]],gl=WX_LT[TG_WX[g]];const rat=R2[ss]||3;
+    const ts=checkTaiSui(z, birthYearZhi);
+    const tsBadge=ts?'<span style="font-size:10px;font-weight:700;padding:1px 8px;background:#A8543820;color:#A85438;border:1px solid #A8543850;margin-left:4px">⚠ '+ts.name+'</span>':'';
+    const tsDetail=ts?'<div style="padding:10px 14px;font-size:12px;color:#8A4838;background:#FBF4EE;border-top:1px solid #A8543830;border-bottom:1px solid var(--border2)"><strong>⚠ '+ts.name+'（'+ts.tag+'）：</strong>'+ts.desc+'</div>':'';
     const d3={比肩:"平穩，宜強化自身實力與人脈，但留意競爭者出現，不宜跟會、借人錢財，感情上可能有追求者出現。",劫財:"競爭氣場強，財務宜保守謹慎，不宜合夥或借貸，感情宜珍重，注意身邊出現第三者。",食神:"才華容易展現，靈感豐沛，適合學習與創作，有口福，工作上易受肯定，身體狀況較佳。",傷官:"思維犀利適合突破創新，但說話需收斂，避免口舌是非，考運較差，遇官年需特別注意官司血光。",正印:"貴人運極旺，長輩上司助力大，學習考試進修皆吉，身心狀況好，母親健康需多留意。",偏印:"直覺敏銳，適合研究或靈性探索，但重大決策宜謹慎，小心假貴人，才華可能被壓制。",偏財:"偏財流動活躍，靈活把握機遇，父親健康需留意，男命注意感情方面的引誘，不宜大額投資。",正財:"正財穩健紮實，腳踏實地必有回報，注意財務與身體，男命可能有婚姻相關事宜。",正官:"官運順暢，職場名聲受肯定，考試晉升皆吉，女命需注意老公身體及婚姻狀況。",七殺:"挑戰壓力較大，血光意外需謹慎，磨礪後更強大，逢殺年宜低調行事，注意意外官司。"};
     var dimHtml2=["整體","工作","感情","財運"].map(function(dim){return '<div class="dim-cell"><div class="dim-label">'+dim+'</div><div class="dim-text">'+((SS_DIM[dim]||{})[ss]||'')+'</div></div>';}).join("");
-    return '<div class="acc-item"'+(i===0?' style="border-color:'+gc+'60"':'')+' data-gc="'+gc+'"><div class="acc-head"><div style="min-width:52px;text-align:center"><div style="font-size:16px;font-weight:600;color:'+gc+'">'+g+z+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+y+'年</div></div><div style="flex:1;padding:0 8px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px"><span style="font-size:12px;font-weight:600;padding:1px 9px;background:var(--card);color:'+gc+';border:1px solid '+gc+'50">'+ss+'</span><span class="stars">'+stars(rat,gc)+'</span></div><div style="font-size:12px;color:var(--text2);line-height:1.5">'+(d3[ss]||'')+'</div></div><span class="acc-arrow">▼</span></div><div class="acc-body"><div style="padding:10px 14px 8px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border2)">'+(d3[ss]||'')+'</div><div class="dim-grid">'+dimHtml2+'</div></div></div>';
+    return '<div class="acc-item"'+(i===0?' style="border-color:'+gc+'60"':'')+' data-gc="'+gc+'"><div class="acc-head"><div style="min-width:52px;text-align:center"><div style="font-size:16px;font-weight:600;color:'+gc+'">'+g+z+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+y+'年</div></div><div style="flex:1;padding:0 8px"><div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap"><span style="font-size:12px;font-weight:600;padding:1px 9px;background:var(--card);color:'+gc+';border:1px solid '+gc+'50">'+ss+'</span><span class="stars">'+stars(rat,gc)+'</span>'+tsBadge+'</div><div style="font-size:12px;color:var(--text2);line-height:1.5">'+(d3[ss]||'')+'</div></div><span class="acc-arrow">▼</span></div><div class="acc-body">'+tsDetail+'<div style="padding:10px 14px 8px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border2)">'+(d3[ss]||'')+'</div><div class="dim-grid">'+dimHtml2+'</div></div></div>';
   }).join("");
   initAllAcc(document.getElementById("lyList"));
 
@@ -1095,13 +1719,20 @@ function saveToHistory(){
     mgNum: mgNum,
     mgName: mgInfo.name||'',
     mgGroup: mgInfo.group||'',
+    note: '',
+    categories: [],
     savedAt: new Date().toLocaleDateString('zh-TW')
   };
   try {
     var list = JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
-    // 避免重複（同八字同性別）
+    // 避免重複（同八字同性別），覆蓋時保留原有筆記與分類
     var dup = list.findIndex(function(r){return r.gz===record.gz && r.gender===record.gender;});
-    if(dup>=0) list.splice(dup,1);
+    if(dup>=0){
+      record.note = list[dup].note||'';
+      record.categories = list[dup].categories||[];
+      record.id = list[dup].id;
+      list.splice(dup,1);
+    }
     list.unshift(record);
     if(list.length>50) list=list.slice(0,50);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
@@ -1121,6 +1752,23 @@ function saveToHistory(){
       },1800);
     }
   } catch(e){ alert('儲存失敗，請確認瀏覽器允許本地儲存。'); }
+}
+
+function saveHistoryNote(id){
+  try {
+    var list = JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
+    var idx = list.findIndex(function(r){return r.id===id;});
+    if(idx<0) return;
+    var ta = document.getElementById('note-'+id);
+    if(!ta) return;
+    list[idx].note = ta.value;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    var saved = document.getElementById('noteSaved-'+id);
+    if(saved){
+      saved.style.display='inline';
+      setTimeout(function(){ saved.style.display='none'; },1800);
+    }
+  } catch(e){ alert('筆記儲存失敗。'); }
 }
 
 function deleteHistory(id){
@@ -1169,13 +1817,80 @@ function loadHistory(record){
   if(tab0btn) switchTab(0,tab0btn);
 }
 
+function renderCareer(){
+  if(!gRes) return;
+  const res=gRes, ri=res.ri, riWx=res.riWx;
+  const gc=WX_C[riWx]||'#8A7352';
+  const career=TG_CAREER[ri];
+  if(career){
+    const tagsHtml=career.tags.map(function(t){
+      return '<span style="display:inline-block;padding:7px 16px;margin:4px;background:var(--card);border:1px solid '+gc+'45;color:'+gc+';font-size:14px;border-radius:20px">'+t+'</span>';
+    }).join('');
+    document.getElementById('careerTG').innerHTML=
+      '<div style="padding:18px 16px;background:var(--card);border:1px solid '+gc+'35">'
+      +'<div style="font-size:14px;font-weight:600;color:'+gc+';margin-bottom:12px">✦ '+ri+'日主 ・ 天職方向</div>'
+      +'<div style="margin-bottom:16px">'+tagsHtml+'</div>'
+      +'</div>'
+      +'<div style="margin-top:14px;padding:14px 16px;border-left:3px solid '+gc+';background:var(--card)">'
+      +'<div style="font-size:13px;color:var(--text3);margin-bottom:6px">你是「'+career.type+'」</div>'
+      +'<div style="font-size:14px;color:var(--text2);line-height:1.9">'+career.desc+'</div>'
+      +'</div>';
+  }
+
+  // 找出命盤中最強十神，給工作方式建議
+  var ssCount={};
+  res.pillars.forEach(function(p){
+    if(p.ss!=='日元'&&p.ss!=='—') ssCount[p.ss]=(ssCount[p.ss]||0)+1;
+  });
+  res.pillars.forEach(function(p){
+    p.cangSS.forEach(function(c){
+      if(c.ss!=='—') ssCount[c.ss]=(ssCount[c.ss]||0)+0.5;
+    });
+  });
+  var sortedSS=Object.entries(ssCount).sort(function(a,b){return b[1]-a[1];});
+  var mainSS=sortedSS.length>0?sortedSS[0][0]:null;
+
+  if(mainSS && SS_CAREER[mainSS]){
+    document.getElementById('careerSS').innerHTML=
+      '<div style="padding:16px 18px;background:#EEF4EE;border:1px solid #5A8A6A40">'
+      +'<div style="font-size:13px;font-weight:600;color:#4A7A5A;margin-bottom:8px">💡 工作方式建議（依命盤主要十神「'+mainSS+'」判斷）</div>'
+      +'<div style="font-size:14px;color:#3A4A3E;line-height:1.9">'+SS_CAREER[mainSS]+'</div>'
+      +'</div>'
+      +(res.sq==='身弱'
+        ? '<div style="margin-top:12px;padding:14px 16px;background:var(--card);border:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.85">你的命格身弱，能量需要補充，比較適合有靠山、有團隊、有資源的工作環境，在對的體系裡，會比單打獨鬥更能發揮你的潛力。</div>'
+        : '<div style="margin-top:12px;padding:14px 16px;background:var(--card);border:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.85">你的命格身強，本身能量充足，比較適合能獨立發揮、自己掌握節奏的工作型態，過度依賴團隊反而可能限制你的發揮空間。</div>');
+  } else {
+    document.getElementById('careerSS').innerHTML='<div class="empty-note">命盤中十神分布較為平均，工作型態彈性大，可依個人興趣選擇。</div>';
+  }
+}
+
 function renderHistory(){
   var el=document.getElementById('historyList');
   if(!el) return;
   var list=[];
   try{ list=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(e){}
+
+  // 搜尋篩選：姓名、日主、生日年份、性別、八字皆可比對
+  var kwEl=document.getElementById('historySearch');
+  var kw=kwEl?kwEl.value.trim():'';
+  if(kw){
+    list=list.filter(function(r){
+      var hay=[r.name,r.ri,r.gender,r.sq,r.gz,r.year,r.month,r.day,r.mgName].join(' ');
+      return hay.indexOf(kw)>-1;
+    });
+  }
+
+  // 分類篩選
+  if(gCategoryFilter){
+    list=list.filter(function(r){ return (r.categories||[]).indexOf(gCategoryFilter)>-1; });
+  }
+
   if(list.length===0){
-    el.innerHTML='<div class="empty-note" style="padding:24px 0">尚無儲存的命盤記錄<br><span style="font-size:12px;color:var(--text3)">排盤後點選「💾 儲存命盤」即可記錄</span></div>';
+    if(kw||gCategoryFilter){
+      el.innerHTML='<div class="empty-note" style="padding:24px 0">沒有符合條件的命盤紀錄<br><span style="font-size:12px;color:var(--text3)">試試調整搜尋關鍵字或分類篩選</span></div>';
+    } else {
+      el.innerHTML='<div class="empty-note" style="padding:24px 0">尚無儲存的命盤記錄<br><span style="font-size:12px;color:var(--text3)">排盤後點選「💾 儲存命盤」即可記錄</span></div>';
+    }
     return;
   }
   // 依日主五行分組（木火土金水順序）
@@ -1183,6 +1898,8 @@ function renderHistory(){
   var groups={};
   WX_ORDER.forEach(function(wx){groups[wx]=[];});
   list.forEach(function(r){ if(groups[r.riWx]) groups[r.riWx].push(r); });
+  var CATS=['感情','財運','事業','健康','運勢'];
+  var CAT_ICON={感情:'💕',財運:'💰',事業:'💼',健康:'🌿',運勢:'✨'};
   var out='';
   WX_ORDER.forEach(function(wx){
     var items=groups[wx];
@@ -1194,23 +1911,82 @@ function renderHistory(){
     out+='<span style="font-size:12px;font-weight:600;color:'+gc+';letter-spacing:2px">'+wx+'日主（'+items.length+'筆）</span>';
     out+='<div style="flex:1;height:1px;background:'+gc+'25"></div></div>';
     items.forEach(function(r){
-      out+='<div class="ev-item" style="position:relative;padding:13px 15px;cursor:pointer;border-left:3px solid '+gc+'60;margin-bottom:7px" onclick="loadHistory('+JSON.stringify(r).replace(/"/g,'&quot;')+')">';
-      out+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">';
+      var cats=r.categories||[];
+      var catBadges=cats.map(function(c){ return '<span style="font-size:10px;padding:1px 7px;background:var(--card);color:'+gc+';border:1px solid '+gc+'40;margin-left:4px">'+(CAT_ICON[c]||'')+c+'</span>'; }).join('');
+      out+='<div class="acc-item" style="border-color:'+gc+'40;margin-bottom:7px">';
+      // 收合標頭：姓名・日主・身強弱・性別
+      out+='<div class="acc-head" style="padding:12px 14px;gap:8px;flex-wrap:wrap">';
       if(r.name) out+='<span style="font-size:14px;font-weight:600;color:var(--text)">'+r.name+'</span>';
       out+='<span style="font-size:12px;color:'+gc+';font-weight:600">'+r.ri+'日主</span>';
       out+='<span style="font-size:11px;padding:1px 7px;background:var(--card);color:'+gc+';border:1px solid '+gc+'50">'+r.sq+'</span>';
       out+='<span style="font-size:11px;color:var(--text3)">'+r.gender+'命</span>';
-      out+='<button onclick="event.stopPropagation();deleteHistory('+r.id+')" style="position:absolute;top:10px;right:10px;padding:2px 9px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text3);cursor:pointer">刪除</button>';
+      out+=catBadges;
+      out+='<span class="acc-arrow">▼</span>';
+      out+='</div>';
+      // 展開內容
+      out+='<div class="acc-body"><div style="padding:0 15px 15px">';
+      out+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;padding-top:4px">';
+      out+='<button onclick="event.stopPropagation();loadHistory('+JSON.stringify(r).replace(/"/g,'&quot;')+')" style="padding:4px 12px;font-size:11px;font-family:inherit;background:var(--ink);color:#FFF;border:none;cursor:pointer">載入此命盤</button>';
       out+='</div>';
       out+='<div style="font-size:12px;color:var(--text2);margin-bottom:4px">'+r.year+'年'+r.month+'月'+r.day+'日 '+r.hName+'時</div>';
       out+='<div style="font-size:11px;color:var(--text3);letter-spacing:2px;margin-bottom:4px">'+r.gz+'</div>';
       if(r.mgName) out+='<div style="font-size:11px;color:var(--text3)">'+r.mgNum+r.mgName+' ・ '+r.mgGroup+'</div>';
       out+='<div style="font-size:10px;color:var(--text3);margin-top:5px;text-align:right">'+r.savedAt+'</div>';
+      // 分類勾選
+      out+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2)">';
+      out+='<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:6px">🏷 歸類（可多選）</div>';
+      out+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      CATS.forEach(function(c){
+        var active=cats.indexOf(c)>-1;
+        out+='<button onclick="toggleHistoryCategory('+r.id+',\''+c+'\',this)" data-active="'+(active?'1':'0')+'" style="padding:4px 12px;font-size:11px;font-family:inherit;cursor:pointer;border-radius:14px;'+(active?'background:'+gc+';color:#FFF;border:1px solid '+gc:'background:var(--card);color:var(--text2);border:1px solid var(--border)')+'">'+(CAT_ICON[c]||'')+' '+c+'</button>';
+      });
+      out+='</div></div>';
+      // 斷事筆記
+      out+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border2)">';
+      out+='<div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:5px">📝 斷事筆記（客戶問題／給的建議）</div>';
+      out+='<textarea id="note-'+r.id+'" placeholder="例如：客戶問今年適不適合轉職，建議她等明年大運轉換後再行動⋯" style="width:100%;min-height:56px;padding:8px 10px;font-size:12px;font-family:inherit;color:var(--text2);background:var(--bg);border:1px solid var(--border);resize:vertical;line-height:1.6">'+(r.note||'')+'</textarea>';
+      out+='<div style="display:flex;align-items:center;gap:8px;margin-top:6px">';
+      out+='<button onclick="saveHistoryNote('+r.id+')" style="padding:4px 12px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid var(--border);color:var(--text2);cursor:pointer">儲存筆記</button>';
+      out+='<button onclick="event.stopPropagation();deleteHistory('+r.id+')" style="padding:4px 12px;font-size:11px;font-family:inherit;background:var(--card);border:1px solid #C89090;color:#A85840;cursor:pointer">刪除命盤</button>';
+      out+='<span id="noteSaved-'+r.id+'" style="font-size:11px;color:#5A7A60;display:none">✓ 已儲存</span>';
       out+='</div>';
+      out+='</div>';
+      out+='</div></div>'; // acc-body, padding wrapper
+      out+='</div>'; // acc-item
     });
     out+='</div>';
   });
   el.innerHTML=out;
+  initAllAcc(el);
+}
+
+function setCategoryFilter(cat,btn){
+  gCategoryFilter=cat;
+  document.querySelectorAll('.cat-filter-btn').forEach(function(b){
+    b.classList.remove('active');
+    b.style.background='var(--card)';
+    b.style.color='var(--text2)';
+    b.style.border='1px solid var(--border)';
+  });
+  btn.classList.add('active');
+  btn.style.background='var(--ink)';
+  btn.style.color='#FFF';
+  btn.style.border='none';
+  renderHistory();
+}
+
+function toggleHistoryCategory(id,cat,btn){
+  try {
+    var list=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');
+    var idx=list.findIndex(function(r){return r.id===id;});
+    if(idx<0) return;
+    var cats=list[idx].categories||[];
+    var ci=cats.indexOf(cat);
+    if(ci>-1){ cats.splice(ci,1); } else { cats.push(cat); }
+    list[idx].categories=cats;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    renderHistory();
+  } catch(e){}
 }
 
 function setCalType(t,btn){}
@@ -1282,6 +2058,110 @@ function renderLyChong(){
 function saveFullCard(){
   savePillarImg();
 }
+// ── 今日運勢指數小卡（社群分享素材）──
+function saveDailyScoreCard(){
+  if(!gRes||!gFort) return;
+  const ri=gRes.ri, riWx=gRes.riWx;
+  const ss=gFort.ss, fg=gFort.flowGan, fwx=gFort.flowWx;
+  const gc=WX_C[fwx]||'#C8A870';
+  const today=new Date();
+  const dateStr=today.getFullYear()+'年'+(today.getMonth()+1)+'月'+today.getDate()+'日';
+
+  const dimItems=["整體","工作","感情","財運"].map(function(dim){
+    return {label:dim, text:(SS_DIM[dim]||{})[ss]||''};
+  });
+  const dimHtml=dimItems.map(function(it){
+    return `<div style="flex:1;min-width:0;background:#FFFFFF;border:1px solid #E8E2D4;padding:14px 16px">
+      <div style="font-size:12px;color:#A89A7A;margin-bottom:6px;letter-spacing:1px">${it.label}</div>
+      <div style="font-size:14px;color:#3A352C;line-height:1.7">${it.text}</div>
+    </div>`;
+  }).join('');
+
+  const card=document.createElement('div');
+  card.style.cssText='position:fixed;top:-9999px;left:-9999px;width:600px;background:#F8F4EC;font-family:"Noto Serif TC",Georgia,serif;padding:36px 32px 30px';
+
+  card.innerHTML=`
+    <div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #E8E2D4">
+      <div style="font-size:20px;font-weight:700;color:#2A2218">今日運勢 ・ ${dateStr}</div>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E8E2D4;padding:22px 20px;margin-bottom:18px">
+      <div style="display:flex;gap:18px;align-items:flex-start">
+        <div style="width:84px;flex-shrink:0;text-align:center;background:${gc}14;border:1px solid ${gc}35;padding:14px 6px">
+          <div style="font-size:32px;font-weight:700;color:${gc};line-height:1">${fg}</div>
+          <div style="font-size:12px;color:${gc};opacity:.75;margin-top:4px">${fwx}</div>
+        </div>
+        <div style="flex:1;padding-top:2px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+            <span style="font-size:16px;font-weight:600;padding:3px 14px;background:#FFFFFF;color:${gc};border:1px solid ${gc}50">${ss}</span>
+            <span style="color:${gc};font-size:15px;letter-spacing:1px">${'★'.repeat(gFort.rating)}${'☆'.repeat(5-gFort.rating)}</span>
+            <span style="font-size:13px;color:#A89A7A">${gFort.rating}/5</span>
+          </div>
+          <div style="height:2px;background:${gc};margin:10px 0"></div>
+          <div style="font-size:14px;color:#A89A7A">${ri}（${riWx}）遇 ${fg}（${fwx}）→ ${ss}</div>
+        </div>
+      </div>
+      <div style="margin-top:18px;padding:16px 18px;background:#FAF6EE;border-left:3px solid ${gc};font-size:15px;line-height:2;color:#4A4438">${gFort.comment}</div>
+    </div>
+    <div style="margin-bottom:8px;font-size:16px;font-weight:700;color:#2A2218">今日各維度</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      ${dimHtml}
+    </div>
+    <div style="text-align:center;margin-top:22px;font-size:11px;color:#B0A488;letter-spacing:2px">命理僅供參考 ・ 知命善用</div>
+  `;
+
+  document.body.appendChild(card);
+  html2canvas(card,{scale:3,useCORS:true,backgroundColor:'#F8F4EC',logging:false}).then(canvas=>{
+    card.remove();
+    showImagePreview(canvas, '今日運勢_'+ri+'日主.png');
+  });
+}
+
+// ── 共用：圖片預覽 + 下載按鈕（先看圖，點擊才下載，下載後顯示已完成）──
+function showImagePreview(canvas, filename){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+
+  const img=document.createElement('img');
+  img.src=canvas.toDataURL('image/png');
+  img.style.cssText='max-width:92%;max-height:72%;object-fit:contain;box-shadow:0 8px 30px rgba(0,0,0,.4)';
+
+  const isMobile=/Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+  const hint=document.createElement('div');
+  hint.textContent=isMobile?'📌 長按圖片即可儲存到相簿':'點下方按鈕即可下載圖片';
+  hint.style.cssText='margin-top:16px;font-size:13px;color:#E8E4DC;letter-spacing:1px;text-align:center';
+
+  const btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:10px;margin-top:16px';
+
+  const downloadBtn=document.createElement('button');
+  downloadBtn.textContent='⬇️ 下載圖片';
+  downloadBtn.style.cssText='padding:10px 24px;font-size:14px;font-family:inherit;background:#C8A870;color:#1C1A17;border:none;border-radius:4px;cursor:pointer;font-weight:600;letter-spacing:1px';
+  downloadBtn.onclick=function(e){
+    e.stopPropagation();
+    const a=document.createElement('a');
+    a.download=filename;
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+    downloadBtn.textContent='✅ 已下載完成';
+    downloadBtn.style.background='#5A7A60';
+    downloadBtn.style.color='#FFF';
+  };
+
+  const closeBtn=document.createElement('button');
+  closeBtn.textContent='關閉';
+  closeBtn.style.cssText='padding:10px 24px;font-size:14px;font-family:inherit;background:transparent;color:#C8C2B0;border:1px solid #5A564C;border-radius:4px;cursor:pointer;letter-spacing:1px';
+  closeBtn.onclick=function(e){ e.stopPropagation(); overlay.remove(); };
+
+  btnRow.appendChild(downloadBtn);
+  btnRow.appendChild(closeBtn);
+  overlay.appendChild(img);
+  overlay.appendChild(hint);
+  overlay.appendChild(btnRow);
+  overlay.addEventListener('click',function(e){ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
 function savePillarImg(){
   if(!gRes) return;
   const ri=gRes.ri, dt=gRes.date;
@@ -1428,18 +2308,7 @@ function savePillarImg(){
   document.body.appendChild(card);
   html2canvas(card,{scale:3,useCORS:true,backgroundColor:'#F2EFEA',logging:false}).then(canvas=>{
     card.remove();
-    const img=document.createElement('img');
-    img.src=canvas.toDataURL('image/png');
-    img.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;object-fit:contain;background:rgba(0,0,0,.9);z-index:9999;cursor:pointer';
-    img.title='長按圖片即可儲存';
-    img.addEventListener('click',()=>img.remove());
-    document.body.appendChild(img);
-    if(!/Mobi|Android|iPhone/i.test(navigator.userAgent)){
-      const a=document.createElement('a');
-      a.download='八字命盤_'+ri+'日主.png';
-      a.href=canvas.toDataURL('image/png');
-      a.click(); img.remove();
-    }
+    showImagePreview(canvas, '八字命盤_'+ri+'日主.png');
   });
 }
 
@@ -1504,189 +2373,68 @@ function savePillarImg(){
     lnk.href=url;
   });
 })();
-window.onload=()=>initSelects();
-
-/* ===== 序號解鎖系統 v2 ===== */
-const PAID_TABS = [3,4,5,6,7,8];
-const PAID_TAB_NAMES = {3:'分析',4:'十神',5:'大運',6:'流年',7:'流月',8:'日運'};
-
-// 內建測試序號雜湊
-// Google Sheet API 驗證
-const GS_API = 'https://script.google.com/macros/s/AKfycbxChdWDOL6q8dfQC6Fg5Zc5zQZV9BYodG3i-Ht0OzyuN4TGSl4UeLpJ5JuQSEh-fj-pbg/exec';
-
-function isValidSerial(serial) {
-  return VALID_SERIALS.has(serial.trim().toUpperCase());
-}
-
-// 暫存付費 tab 的原始 HTML
-const TAB_BACKUPS = {};
-
-// 純 JS SHA-256，不依賴 crypto.subtle，file:// 也能用
-function sha256(str) {
-  function rightRotate(v,a){return(v>>>a)|(v<<(32-a));}
-  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
-  let h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
-  const bytes=[];
-  for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);if(c<128)bytes.push(c);else if(c<2048)bytes.push(192|(c>>6),128|(c&63));else bytes.push(224|(c>>12),128|((c>>6)&63),128|(c&63));}
-  const l=bytes.length;bytes.push(0x80);
-  while(bytes.length%64!==56)bytes.push(0);
-  const bl=l*8;
-  bytes.push(0,0,0,0,(bl>>>24)&255,(bl>>>16)&255,(bl>>>8)&255,bl&255);
-  for(let i=0;i<bytes.length;i+=64){
-    const w=[];
-    for(let j=0;j<16;j++)w[j]=(bytes[i+j*4]<<24)|(bytes[i+j*4+1]<<16)|(bytes[i+j*4+2]<<8)|bytes[i+j*4+3];
-    for(let j=16;j<64;j++){const s0=rightRotate(w[j-15],7)^rightRotate(w[j-15],18)^(w[j-15]>>>3);const s1=rightRotate(w[j-2],17)^rightRotate(w[j-2],19)^(w[j-2]>>>10);w[j]=(w[j-16]+s0+w[j-7]+s1)>>>0;}
-    let [a,b,c,d,e,f,g,hh]=h;
-    for(let j=0;j<64;j++){const S1=rightRotate(e,6)^rightRotate(e,11)^rightRotate(e,25);const ch=(e&f)^(~e&g);const t1=(hh+S1+ch+K[j]+w[j])>>>0;const S0=rightRotate(a,2)^rightRotate(a,13)^rightRotate(a,22);const maj=(a&b)^(a&c)^(b&c);const t2=(S0+maj)>>>0;hh=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}
-    h[0]=(h[0]+a)>>>0;h[1]=(h[1]+b)>>>0;h[2]=(h[2]+c)>>>0;h[3]=(h[3]+d)>>>0;h[4]=(h[4]+e)>>>0;h[5]=(h[5]+f)>>>0;h[6]=(h[6]+g)>>>0;h[7]=(h[7]+hh)>>>0;
+// ── 分享連結（URL帶參數自動排盤，供日後產生連結使用）──
+function loadFromURL(){
+  var params=new URLSearchParams(window.location.search);
+  if(!params.has('y')) return false;
+  var y=params.get('y'),m=params.get('m'),d=params.get('d'),h=params.get('h'),g=params.get('g'),n=params.get('n');
+  if(document.getElementById('selY')) document.getElementById('selY').value=y;
+  if(document.getElementById('selM')) document.getElementById('selM').value=m;
+  if(document.getElementById('selD')){
+    var days=new Date(parseInt(y),parseInt(m),0).getDate();
+    var dOpts='<option value="">選擇日期</option>';
+    for(var dd=1;dd<=days;dd++) dOpts+='<option value="'+dd+'"'+(dd===parseInt(d)?' selected':'')+'>'+dd+' 日</option>';
+    document.getElementById('selD').innerHTML=dOpts;
   }
-  return h.map(v=>v.toString(16).padStart(8,'0')).join('');
+  if(document.getElementById('selH')) document.getElementById('selH').value=h;
+  if(n && document.getElementById('inputName')) document.getElementById('inputName').value=n;
+  if(g){
+    gGender=g;
+    document.querySelectorAll('.gender-btn:not(.mode-btn)').forEach(function(b){
+      b.classList.toggle('active', b.textContent.indexOf(g==='男'?'男':'女')>-1);
+    });
+  }
+  return true;
 }
 
-function isUnlocked() {
-  return localStorage.getItem('bazi_unlocked') === 'true';
-}
-
-function updateUnlockUI() {
-  const unlocked = isUnlocked();
-  document.querySelectorAll('.tab').forEach((btn, i) => {
-    if(PAID_TAB_NAMES[i]) {
-      btn.textContent = unlocked ? PAID_TAB_NAMES[i] : (PAID_TAB_NAMES[i] + ' 🔒');
-    }
+window.onload=()=>{
+  initSelects();
+  if(loadFromURL()){
+    setTimeout(function(){ doCalc(); },50);
+  }
+  window.addEventListener('scroll',function(){
+    var btn=document.getElementById('backTopBtn');
+    if(!btn) return;
+    if(window.scrollY>300){ btn.style.display='flex'; }
+    else { btn.style.display='none'; }
   });
-  const statusBtn = document.getElementById('unlockStatus');
-  if(statusBtn) {
-    statusBtn.style.display = unlocked ? 'block' : 'none';
-    statusBtn.textContent = '✓ 已解鎖';
-  }
-}
-
-function buildPaywall(tabId) {
-  return `<div class="paywall-banner" style="min-height:220px">
-    <div class="pw-icon">🔐</div>
-    <div class="pw-title">付費功能</div>
-    <div class="pw-sub">此功能需要授權序號才能使用<br>購買後輸入序號即可永久解鎖</div>
-    <input class="paywall-input" id="serialInput_${tabId}" type="text" placeholder="WL-XXXX-XXXX" maxlength="16"
-      oninput="this.value=this.value.toUpperCase()"
-      onkeydown="if(event.key==='Enter')verifySerial(${tabId})">
-    <button class="paywall-btn" onclick="verifySerial(${tabId})">解 鎖</button>
-    <div class="paywall-err" id="serialErr_${tabId}">序號錯誤，請確認後重新輸入</div>
-    <div class="paywall-ok" id="serialOk_${tabId}">✓ 解鎖成功！</div>
-    <div style="margin-top:14px;font-size:11px;color:var(--text3);letter-spacing:1px">
-      洽詢購買：<strong style="color:var(--text)">@weiliang2862</strong>
-    </div>
-  </div>`;
-}
-
-// 覆蓋 switchTab：付費 tab 先備份原始內容，再替換成付費牆
-const _origSwitchTab = switchTab;
-window.switchTab = function(i, btn) {
-  if(PAID_TABS.includes(i) && !isUnlocked()) {
-    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    for(let t=0;t<10;t++){
-      const el=document.getElementById('tab'+t);
-      if(el) el.style.display = t===i ? 'block' : 'none';
-    }
-    const tabEl = document.getElementById('tab'+i);
-    if(tabEl) {
-      // 備份原始內容（只做一次）
-      if(!TAB_BACKUPS[i]) TAB_BACKUPS[i] = tabEl.innerHTML;
-      // 完全替換為付費牆
-      tabEl.innerHTML = buildPaywall(i);
-    }
-    return;
-  }
-  _origSwitchTab(i, btn);
+  // 內容保護：攔截右鍵選單與複製快捷鍵（輸入框、文字區域、圖片不受影響）
+  document.addEventListener('contextmenu',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag!=='input' && tag!=='textarea' && tag!=='img'){ e.preventDefault(); }
+  });
+  document.addEventListener('copy',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag!=='input' && tag!=='textarea'){ e.preventDefault(); }
+  });
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input' || tag==='textarea') return;
+    var k=(e.key||'').toLowerCase();
+    if((e.ctrlKey||e.metaKey) && (k==='c'||k==='x'||k==='u'||k==='s')){ e.preventDefault(); }
+    if(k==='f12'){ e.preventDefault(); }
+  });
 };
-
-function verifySerial(tabId) {
-  const input = document.getElementById('serialInput_'+tabId);
-  const errEl = document.getElementById('serialErr_'+tabId);
-  const okEl = document.getElementById('serialOk_'+tabId);
-  const btn = document.querySelector('.paywall-btn');
-  if(!input) return;
-
-  const serial = input.value.trim().toUpperCase();
-  if(!serial) { errEl.style.display='block'; return; }
-
-  errEl.style.display = 'none';
-  okEl.style.display = 'none';
-  if(btn) { btn.textContent = '驗證中...'; btn.disabled = true; }
-
-  // 先檢查本地快取（已解鎖過的序號）
-  const cached = JSON.parse(localStorage.getItem('bazi_valid_serials') || '[]');
-  if(cached.includes(serial) || serial === 'WL-TEST-2024') {
-    onSerialValid(serial, tabId);
-    return;
-  }
-
-  // 呼叫 Google Sheet API
-  fetch(GS_API + '?serial=' + encodeURIComponent(serial))
-    .then(r => r.json())
-    .then(data => {
-      if(btn) { btn.textContent = '解 鎖'; btn.disabled = false; }
-      if(data.valid) {
-        // 快取這個序號到 localStorage
-        const list = JSON.parse(localStorage.getItem('bazi_valid_serials') || '[]');
-        if(!list.includes(serial)) list.push(serial);
-        localStorage.setItem('bazi_valid_serials', JSON.stringify(list));
-        onSerialValid(serial, tabId);
-      } else {
-        errEl.style.display = 'block';
-        input.style.borderColor = '#A05040';
-        setTimeout(()=>{input.style.borderColor='';}, 1500);
-      }
-    })
-    .catch(() => {
-      if(btn) { btn.textContent = '解 鎖'; btn.disabled = false; }
-      // 網路失敗時檢查本地快取
-      if(cached.includes(serial)) {
-        onSerialValid(serial, tabId);
-      } else {
-        errEl.textContent = '網路連線失敗，請確認網路後重試';
-        errEl.style.display = 'block';
-      }
-    });
-}
-
-function onSerialValid(serial, tabId) {
-  const okEl = document.getElementById('serialOk_'+tabId);
-  if(okEl) okEl.style.display = 'block';
-  localStorage.setItem('bazi_unlocked', 'true');
-  localStorage.setItem('bazi_serial', serial);
-  updateUnlockUI();
-  setTimeout(()=>{
-    PAID_TABS.forEach(t => {
-      const el = document.getElementById('tab'+t);
-      if(el && TAB_BACKUPS[t]) el.innerHTML = TAB_BACKUPS[t];
-    });
-    if(gRes) {
-      renderAll();
-      renderLiuYue();
-    }
-  }, 700);
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  // 備份所有付費 tab 原始內容（在頁面初始化時）
-  PAID_TABS.forEach(i => {
-    const el = document.getElementById('tab'+i);
-    if(el) TAB_BACKUPS[i] = el.innerHTML;
-  });
-  // 右下角狀態按鈕
-  const btn = document.createElement('button');
-  btn.id = 'unlockStatus';
-  btn.onclick = ()=>{
-    if(confirm('要清除解鎖記錄嗎？')) {
-      localStorage.removeItem('bazi_unlocked');
-      localStorage.removeItem('bazi_serial');
-      location.reload();
-    }
-  };
-  document.body.appendChild(btn);
-  updateUnlockUI();
-});
 </script>
+
+<div id="floatBtnGroup" style="position:fixed;right:16px;bottom:24px;z-index:500;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+  <a href="https://line.me/R/ti/p/@weiliang2862" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:#06C755;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.25)" title="加LINE諮詢">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.346 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.349 0 .63.285.63.63v4.141h1.756c.349 0 .63.283.63.63 0 .344-.281.629-.63.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" fill="#FFFFFF"/></svg>
+  </a>
+  <a href="https://www.instagram.com/yuhwang2862" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(45deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5);display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.25)" title="追蹤IG">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" fill="#FFFFFF"/></svg>
+  </a>
+  <button id="backTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="display:none;width:44px;height:44px;border-radius:50%;background:#1C1A17;color:#FFF;border:2px solid #FFFFFF;font-size:18px;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.35);align-items:center;justify-content:center">↑</button>
+</div>
 </body>
 </html>
